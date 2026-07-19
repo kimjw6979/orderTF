@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>티제이팜_발주TF</title>
+    <title>💊티제이팜 발주TF</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
@@ -209,7 +209,7 @@
 
     <!-- 스플래시 화면 -->
     <div id="splash-screen">
-        <img src="logo.png" alt="티제이팜 발주TF 환영합니다!">
+        <img src="logo.png" alt="티제이팜 주문요청 환영합니다!">
     </div>
 
     <!-- 사이드바 열기 버튼 -->
@@ -268,7 +268,7 @@
     </div>
 
     <div class="main">
-        <h1>📋 티제이팜 발주TF 등록 게시판 <span style="font-size: 1rem; font-weight: normal; color: #2e90e8;">(실시간 공유 🟢)</span></h1>
+        <h1>📋 티제이팜 주문요청 등록 게시판 <span style="font-size: 1rem; font-weight: normal; color: #2e90e8;">(실시간 공유 🟢)</span></h1>
         
         <!-- Login Section -->
         <div id="login-section" style="max-width: 500px; margin: 4rem auto; text-align: center;">
@@ -490,7 +490,7 @@
         }
         db = firebase.database();
         
-        // 발주TF용 데이터베이스 경로
+        // 주문요청용 데이터베이스 경로
         pinsRef = db.ref('tf_pins');
         entriesRef = db.ref('tf_entries');
 
@@ -1060,7 +1060,7 @@
             else if (filter === 'check') filterName = "답변완료";
             else if (filter === 'del') filterName = "삭제내역";
             
-            XLSX.writeFile(workbook, `TJPHARM_발주TF_발주내역_${filterName}_${dateString}.xlsx`);
+            XLSX.writeFile(workbook, `TJPHARM_주문요청_발주내역_${filterName}_${dateString}.xlsx`);
         }
 
         function showToast(msg, isError=false) {
