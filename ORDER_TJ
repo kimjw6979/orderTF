@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>티제이팜_발주TF</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    
+    <!-- 엑셀 전용 무료 번역기 (SheetJS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #FF4B4B;
+            --primary-hover: #ff3333;
+            --text: #31333F;
+            --text-light: #70757A;
+            --bg: #FFFFFF;
+            --sec-bg: #F0F2F6;
+            --border: #D1D6E3;
+            --success: #09AB3B;
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--sec-bg); 
+            margin: 0; 
+            display: flex; 
+            color: var(--text); 
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 🌟 스플래시(대문) 화면 디자인 🌟 */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fcefd6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease;
+        }
+        #splash-screen img {
+            max-width: 90%;
+            max-height: 90vh;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        /* Layout */
+        .sidebar { 
+            width: 320px; 
+            background-color: var(--sec-bg); 
+            padding: 2rem 1.5rem; 
+            border-right: 1px solid var(--border); 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        .main { 
+            flex-grow: 1; 
+            padding: 3rem 4rem; 
+            background: var(--bg); 
+            box-sizing: border-box; 
+            overflow-y: auto;
+            border-top-left-radius: 12px;
+            box-shadow: -4px 0 15px rgba(0,0,0,0.03);
+            transition: width 0.3s ease;
+        }
+        
+        /* Typography */
+        h1 { font-size: 2.2rem; font-weight: 700; margin-top: 0; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+        h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+        h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; }
+        p { margin: 0 0 1rem 0; line-height: 1.5; color: var(--text-light); }
+        
+        /* Form Elements */
+        input, select { 
+            width: 100%; 
+            padding: 0.75rem 1rem; 
+            margin-bottom: 1rem; 
+            border: 1px solid var(--border); 
+            border-radius: 0.5rem; 
+            box-sizing: border-box; 
+            font-size: 1rem; 
+            background-color: var(--bg);
+            transition: border-color 0.2s;
+        }
+        input[type="file"] { padding: 0.5rem; font-size: 0.85rem; margin-bottom: 0.5rem; }
+        input:focus, select:focus { outline: none; border-color: var(--primary); }
+        
+        button { 
+            width: 100%;
+            padding: 0.75rem 1rem; 
+            background-color: var(--primary); 
+            color: white; 
+            border: 1px solid var(--primary); 
+            border-radius: 0.5rem; 
+            cursor: pointer; 
+            font-size: 1rem;
+            font-weight: 600; 
+            transition: all 0.2s;
+        }
+        button:hover { background-color: var(--primary-hover); border-color: var(--primary-hover); }
+        button:disabled { background-color: var(--border); cursor: not-allowed; }
+        button.secondary { background-color: var(--bg); color: var(--text); border-color: var(--border); }
+        button.secondary:hover { background-color: var(--sec-bg); color: var(--primary); border-color: var(--primary); }
+        
+        /* Metrics */
+        .metrics { display: flex; gap: 1.5rem; margin: 2rem 0; }
+        .metric-card { 
+            background: var(--bg); 
+            padding: 1.5rem; 
+            border-radius: 0.75rem; 
+            flex: 1; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        .metric-title { font-size: 1rem; color: var(--text-light); margin-bottom: 0.5rem; font-weight: 500;}
+        .metric-value { font-size: 2.5rem; font-weight: 700; color: var(--text); }
+        
+        /* Layout Grids */
+        .form-row { display: grid; grid-template-columns: 2fr 2fr 0.8fr 1.2fr 1fr 2fr; gap: 1rem; margin-bottom: 1rem; }
+        .search-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; padding: 1rem; background: #fafafa; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem; }
+        .search-grid input { margin-bottom: 0; padding: 0.5rem; font-size: 0.9rem; }
+        
+        @media (max-width: 1200px) { 
+            .form-row { grid-template-columns: 1fr 1fr 1fr; } 
+            .search-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        
+        /* Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.95rem; }
+        th, td { border-bottom: 1px solid var(--sec-bg); padding: 1rem 0.5rem; text-align: center; vertical-align: middle; }
+        th { color: var(--text-light); font-weight: 600; background: #fafafa; position: sticky; top: 0;}
+        tr:hover td { background-color: #fcfcfc; }
+        
+        /* Utilities */
+        .hidden { display: none !important; }
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+        .toast { background: #333; color: white; padding: 12px 24px; border-radius: 8px; margin-top: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transform: translateY(20px); transition: all 0.3s ease; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        
+        .filter-bar { display: flex; justify-content: space-between; align-items: center; background: #fafafa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid var(--border); }
+        .radio-group label { margin-right: 1.5rem; cursor: pointer; font-weight: 500; }
+        .radio-group input { width: auto; margin-right: 0.5rem; }
+        
+        .info-box { background: #e8f4fd; border-left: 4px solid #2e90e8; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem; }
+        .info-box p { margin: 0; color: #1a5c99; font-weight: 500; }
+        
+        input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
+        
+        /* Pagination */
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 2rem; }
+        .pagination button { width: auto; padding: 0.5rem 1.5rem; }
+        
+        /* Expander */
+        .expander { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem; overflow: hidden; }
+        .expander-header { background: #fafafa; padding: 1rem; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; }
+        .expander-header:hover { background: #f0f0f0; }
+        .expander-content { display: none; border-top: 1px solid var(--border); }
+        .expander.open .expander-content { display: block; }
+
+        /* 자동완성 드롭다운 디자인 */
+        .autocomplete-container { position: relative; width: 100%; }
+        .autocomplete-list {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: #fff; border: 1px solid #ccc; z-index: 1000;
+            max-height: 250px; overflow-y: auto; display: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 0; margin: 0; list-style: none;
+            border-radius: 4px;
+        }
+        .autocomplete-list li {
+            padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; text-align: left;
+        }
+        .autocomplete-list li:hover { background-color: #e6f2ff; }
+        .text-small { color: #888; font-size: 12px; margin-left: 8px; }
+        
+        .autocomplete-active {
+            background-color: #e6f2ff !important;
+            color: #000;
+        }
+
+        /* 모바일 반응형 디자인 */
+        @media (max-width: 768px) {
+            .main { padding: 1.5rem 1rem; }
+            h1 { font-size: 1.5rem; }
+            .metrics { flex-direction: column; gap: 1rem; }
+            .form-row { grid-template-columns: 1fr; }
+            .search-grid { grid-template-columns: 1fr; }
+            .filter-bar { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .filter-bar > div { width: 100%; display: flex; flex-direction: column; gap: 0.5rem; }
+            .filter-bar select, .filter-bar button { width: 100% !important; margin: 0 !important; }
+            th, td { white-space: nowrap; padding: 0.8rem 0.5rem; font-size: 0.85rem; }
+            .sidebar { width: 100%; position: absolute; z-index: 2000; height: 100%; overflow-y: auto;}
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 스플래시 화면 -->
+    <div id="splash-screen">
+        <img src="이미지.png" alt="티제이팜 발주TF 환영합니다!">
+    </div>
+
+    <!-- 사이드바 열기 버튼 -->
+    <button id="btn-show-sidebar" onclick="toggleSidebar()" style="position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; border-radius: 50%; background: var(--text); color: white; border: none; font-size: 1.5rem; cursor: pointer; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.2); text-align: center; line-height: 50px; padding: 0;" title="관리자 메뉴 열기">⚙️</button>
+
+    <div class="sidebar hidden" id="sidebar">
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <h2 style="margin: 0;">🔒 관리자 메뉴</h2>
+                <button class="secondary" onclick="toggleSidebar()" style="width: auto; padding: 0.3rem 0.6rem; font-size: 0.8rem; margin: 0; border: 1px solid var(--border);">숨기기 ◀</button>
+            </div>
+            <p style="font-size: 0.85rem;">기초 데이터 업로드 전용<br>업로드 한번으로 데이터 유지</p>
+            <input type="password" placeholder="관리자 비밀번호" id="admin-pw" maxlength="5">
+            <button class="secondary" onclick="checkAdmin()">인증하기</button>
+        </div>
+        
+        <div id="admin-menu" class="hidden" style="margin-top: 1rem;">
+            <div class="info-box" style="background:#e6f8eb; border-color:var(--success);">
+                <p style="color:#077e2b;">✅ 관리자 인증 성공</p>
+            </div>
+            
+            <h3 style="font-size: 1rem; margin-top: 2rem;">📤 기초 데이터 엑셀 업로드</h3>
+            <p style="font-size: 0.8rem; color: #ff3333; font-weight: bold;">※ 업로드 시 기존 데이터는 덮어쓰기 됩니다.</p>
+            
+            <div style="background: white; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <label style="font-size: 0.9rem; font-weight: bold; color: var(--text); margin: 0;">📦 상품색인부</label>
+                    <span id="time-products" style="font-size: 0.75rem; color: var(--primary); font-weight: 500;">기록 없음</span>
+                </div>
+                <input type="file" id="file-products" accept=".xlsx, .xls">
+                <button class="secondary" style="padding: 0.5rem;" onclick="uploadProductsExcel()" id="btn-upload-prod">상품 데이터 덮어쓰기</button>
+            </div>
+
+            <div style="background: white; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <label style="font-size: 0.9rem; font-weight: bold; color: var(--text); margin: 0;">🏪 매출처색인부</label>
+                    <span id="time-vendors" style="font-size: 0.75rem; color: var(--primary); font-weight: 500;">기록 없음</span>
+                </div>
+                <input type="file" id="file-vendors" accept=".xlsx, .xls">
+                <button class="secondary" style="padding: 0.5rem;" onclick="uploadVendorsExcel()" id="btn-upload-vend">매출처 데이터 덮어쓰기</button>
+            </div>
+            <hr style="border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0;">
+
+            <h3 style="font-size: 1rem; margin-top: 2rem;">👥 사용자 관리</h3>
+            <button class="secondary" style="margin-bottom: 0.5rem;" onclick="togglePinList()">📋 등록된 사용자(PIN) 목록 보기</button>
+            
+            <div id="pin-list-display" class="hidden" style="background: white; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; max-height: 250px; overflow-y: auto;">
+                <!-- 리스트가 여기에 나옵니다 -->
+            </div>
+            
+            <h3 style="font-size: 1rem; margin-top: 2rem;">🚨 시스템 초기화</h3>
+            <p style="font-size: 0.8rem;">테스트 종료 시 초기화 (데이터 복구 불가)</p>
+            <button style="background-color: var(--text); border-color: var(--text); margin-bottom: 0.5rem;" onclick="clearData()">🗑️ 발주 내역 전체 초기화</button>
+            <button style="background-color: var(--text); border-color: var(--text); margin-bottom: 0.5rem;" onclick="clearPins()">🔄 PIN 등록 내역 전체 초기화</button>
+        </div>
+    </div>
+
+    <div class="main">
+        <h1>📋 티제이팜 발주TF 등록 게시판 <span style="font-size: 1rem; font-weight: normal; color: #2e90e8;">(실시간 공유 🟢)</span></h1>
+        
+        <!-- Login Section -->
+        <div id="login-section" style="max-width: 500px; margin: 4rem auto; text-align: center;">
+            <h3>🔐 시스템 접속</h3>
+            <p>열람 및 등록을 위해 <strong>개인 접속 PIN 4자리(숫자)</strong>를 입력하세요.</p>
+            <input type="password" id="user-pin" placeholder="예: 1234" maxlength="4" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem;">
+            <button onclick="login()">접속하기</button>
+            
+            <div id="register-section" class="hidden" style="margin-top: 2rem; text-align: left;">
+                <div class="info-box">
+                    <p>👋 처음 입력하신 PIN 번호입니다.<br>이 PIN 번호와 연결할 <strong>본인의 이름</strong>을 등록해주세요.<br><span style="font-size:0.85rem; color:#d32f2f;">※ 등록 후 <b>관리자의 승인</b>이 있어야 접속이 가능합니다.</span></p>
+                </div>
+                <input type="text" id="user-name" placeholder="등록자/답변자 확인용 이름 입력 (예: 김정욱)">
+                <button onclick="registerPin()">이름 등록하고 승인 요청하기</button>
+            </div>
+        </div>
+
+        <!-- App Section -->
+        <div id="app-section" class="hidden">
+            <div class="info-box" style="background:#e6f8eb; border-color:var(--success); display:flex; justify-content:space-between; align-items:center;">
+                <p style="color:#077e2b; font-size:1.1rem;" id="welcome-msg"></p>
+                <button onclick="logout()" style="width:auto; padding:0.4rem 1rem; background:white; color:#333; border:1px solid #ccc;">로그아웃</button>
+            </div>
+            
+            <!-- Metrics -->
+            <div class="metrics">
+                <div class="metric-card">
+                    <div class="metric-title">📌 전체 등록</div>
+                    <div class="metric-value" id="m-total">0건</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">⏳ 미체크</div>
+                    <div class="metric-value" id="m-unchecked" style="color: #f59e0b;">0건</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">✅ 답변완료</div>
+                    <div class="metric-value" id="m-checked" style="color: var(--success);">0건</div>
+                </div>
+            </div>
+
+            <!-- Input Form -->
+            <h3 style="margin-top: 3rem;">✍️ 신규 발주 추가</h3>
+            <!-- 🌟 수정: 사유(필수) 안내 및 최대 글자수 기입 -->
+            <p>상품, 거래처 정보와 사유(필수)를 입력하세요. (사유는 최대 30자)</p>
+            
+            <div class="form-row">
+                <div class="autocomplete-container">
+                    <input type="text" id="i-prod" placeholder="📦 상품 검색 (예: 004090 레모나)" autocomplete="off">
+                    <ul id="i-prod-list" class="autocomplete-list"></ul>
+                </div>
+                <div class="autocomplete-container">
+                    <input type="text" id="i-vend" placeholder="🏪 거래처 검색 (예: 77144 한마음)" autocomplete="off">
+                    <ul id="i-vend-list" class="autocomplete-list"></ul>
+                </div>
+                <div><input type="number" id="i-qty" placeholder="💊 수량" min="1"></div>
+                <div>
+                    <select id="i-center">
+                        <option value="" disabled selected>🏠 센터 선택</option>
+                        <option value="1 평택">1 평택센터</option>
+                        <option value="2 대전">2 대전센터</option>
+                        <option value="3 분당">3 분당센터</option>
+                        <option value="4 부천">4 부천센터</option>
+                    </select>
+                </div>
+                <div><input type="text" id="i-reg" placeholder="🙋 등록자" readonly></div>
+                <!-- 🌟 수정: 등록 사유 필수(maxlength=30) -->
+                <div><input type="text" id="i-reason" placeholder="📝 등록 사유 (필수)" maxlength="30"></div>
+            </div>
+            <button onclick="addRow()" id="btn-add">➕ 신규 발주 라인 추가</button>
+            
+            <hr style="border: 0; border-top: 1px solid var(--border); margin: 3rem 0;">
+            
+            <!-- Filter Bar -->
+           <div class="filter-bar">
+                <div class="radio-group">
+                    <label><input type="radio" name="filter" value="uncheck" onchange="resetPageAndRender()" checked> 미체크</label>
+                    <label><input type="radio" name="filter" value="check" onchange="resetPageAndRender()"> 체크(답변완료)</label>
+                    <label><input type="radio" name="filter" value="all" onchange="resetPageAndRender()"> 전체(미체크+체크)</label>
+                    <label><input type="radio" name="filter" value="del" onchange="resetPageAndRender()"> 🗑️ 삭제내역</label>
+                </div>
+                <div style="display:flex; gap:1rem; align-items:center;">
+                    <button class="secondary" style="width: auto; padding: 0.5rem 1rem;" onclick="exportExcel()">📥 엑셀(.xlsx) 다운로드</button>
+                    <select id="f-center" onchange="resetPageAndRender()" style="width: auto; margin: 0; padding: 0.5rem 1rem;">
+                        <option value="all">센터구분(전체)</option>
+                        <option value="평택">1 평택센터</option>
+                        <option value="대전">2 대전센터</option>
+                        <option value="분당">3 분당센터</option>
+                        <option value="부천">4 부천센터</option>
+                    </select>
+                    <select id="f-limit" onchange="resetPageAndRender()" style="width: auto; margin: 0; padding: 0.5rem 1rem;">
+                        <option value="10">10개씩 보기</option>
+                        <option value="25">25개씩 보기</option>
+                        <option value="50" selected>50개씩 보기</option>
+                        <option value="100">100개씩 보기</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Detailed Search Expander -->
+            <div class="expander open" id="search-expander">
+                <div class="expander-header" onclick="toggleExpander()">
+                    <span>🔍 표 상세 검색 필터 (클릭하여 열고 닫기)</span>
+                    <span id="expander-icon">▼</span>
+                </div>
+                <div class="expander-content">
+                    <div class="search-grid">
+                        <input type="text" id="s-pcode" placeholder="제품코드" oninput="resetPageAndRender()">
+                        <input type="text" id="s-pname" placeholder="제품명" oninput="resetPageAndRender()">
+                        <input type="text" id="s-vcode" placeholder="거래처코드" oninput="resetPageAndRender()">
+                        <input type="text" id="s-vname" placeholder="거래처명" oninput="resetPageAndRender()">
+                        <input type="text" id="s-reg" placeholder="등록자" oninput="resetPageAndRender()">
+                        <input type="text" id="s-comp" placeholder="답변자" oninput="resetPageAndRender()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 8px;">
+                <table id="data-table">
+                    <thead>
+                        <tr>
+                            <th width="50">🗑️ 삭제</th>
+                            <th width="50">상태</th>
+                            <th>제품코드</th>
+                            <th>제품명</th>
+                            <th>규격</th>
+                            <th>수량</th>
+                            <th>거래처코드</th>
+                            <th>거래처명</th>
+                            <th>센터</th>
+                            <th>등록자</th>
+                            <th>등록 사유</th>
+                            <th>등록일시</th>
+                            <th>답변자</th>
+                            <th width="150">비고</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data injected via JS -->
+                    </tbody>
+                </table>
+                <div id="empty-state" style="padding: 3rem; text-align: center; color: var(--text-light); display: none;">
+                    데이터를 불러오는 중이거나 등록된 내역이 없습니다.
+                </div>
+            </div>
+            <p style="font-size: 0.85rem; margin-top: 1rem;">💡 실시간으로 데이터가 연동됩니다. 타인이 등록한 건만 확인(답변완료) 및 비고 작성이 가능합니다.</p>
+            
+            <!-- Pagination -->
+            <div class="pagination">
+                <button class="secondary" id="btn-prev" onclick="changePage(-1)">◀ 이전</button>
+                <div style="text-align: center;">
+                    <b id="page-info">1 / 1 페이지</b><br>
+                    <span style="font-size: 13px; color: gray;" id="total-info">검색된 데이터 총 0건</span>
+                </div>
+                <button class="secondary" id="btn-next" onclick="changePage(1)">다음 ▶</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        // 페이지 로드 후 스플래시 화면 숨기기
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                if(splash) {
+                    splash.style.opacity = '0';
+                    setTimeout(() => splash.style.display = 'none', 800);
+                }
+            }, 1500);
+        });
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const showBtn = document.getElementById('btn-show-sidebar');
+            
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                showBtn.classList.add('hidden');
+            } else {
+                sidebar.classList.add('hidden');
+                showBtn.classList.remove('hidden');
+            }
+        }
+
+        let vendorsData = [];
+        let productsData = [];
+        let db;
+        let pinsRef;
+        let entriesRef;
+        let entries = [];
+        let pins = {};
+        let currentUser = "";
+        let currentPin = "";
+        let currentPage = 1;
+        const ADMIN_PW = "04017";
+
+        function toggleExpander() {
+            const exp = document.getElementById('search-expander');
+            const icon = document.getElementById('expander-icon');
+            exp.classList.toggle('open');
+            icon.innerText = exp.classList.contains('open') ? '▼' : '▶';
+        }
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAA4fgWuHy2HdgNSQg2EVEKlGy-2Bh9T4",
+            authDomain: "tjpharm2038.firebaseapp.com",
+            databaseURL: "https://tjpharm2038-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "tjpharm2038",
+            storageBucket: "tjpharm2038.firebasestorage.app",
+            messagingSenderId: "936727740698",
+            appId: "1:936727740698:web:359e35c4a94a6d5d746ca3",
+            measurementId: "G-T273Z09FGK"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        db = firebase.database();
+        
+        // 발주TF용 데이터베이스 경로
+        pinsRef = db.ref('tf_pins');
+        entriesRef = db.ref('tf_entries');
+
+        // 제품/매출처 데이터는 기존 업로드 내역 공유
+        db.ref('vendors').on('value', snap => {
+            if(snap.exists()) vendorsData = Object.values(snap.val());
+        });
+        db.ref('products').on('value', snap => {
+            if(snap.exists()) productsData = Object.values(snap.val());
+        });
+
+        db.ref('metadata/upload_time').on('value', snap => {
+            const times = snap.val();
+            if(times) {
+                if(times.products) {
+                    document.getElementById('time-products').innerText = `${times.products}`;
+                }
+                if(times.vendors) {
+                    document.getElementById('time-vendors').innerText = `${times.vendors}`;
+                }
+            }
+        });
+
+        function setupRealtimeListeners() {
+            pinsRef.on('value', (snapshot) => {
+                pins = snapshot.val() || {};
+                const display = document.getElementById('pin-list-display');
+                if (!display.classList.contains('hidden')) {
+                    renderPinList();
+                }
+            });
+
+            entriesRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                entries = [];
+                if (data) {
+                    for (let key in data) {
+                        entries.push({...data[key], dbKey: key});
+                    }
+                }
+                entries.sort((a, b) => a.id - b.id);
+                if (!document.getElementById('app-section').classList.contains('hidden')) {
+                    renderTable();
+                }
+            });
+        }
+
+        setupRealtimeListeners();
+
+        const elLoginSec = document.getElementById('login-section');
+        const elAppSec = document.getElementById('app-section');
+        const elRegSec = document.getElementById('register-section');
+        
+        function login() {
+            const pin = document.getElementById('user-pin').value;
+            if(pin.length !== 4 || isNaN(pin)) {
+                showToast("⚠️ PIN 번호는 반드시 숫자 4자리로 입력해야 합니다.", true);
+                return;
+            }
+            if(!db) {
+                showToast("⚠️ DB가 아직 연결되지 않았습니다. 잠시 후 다시 시도해주세요.", true);
+                return;
+            }
+
+            currentPin = pin;
+            if(pins[pin]) {
+                const userData = pins[pin];
+                
+                if (typeof userData === 'string') {
+                    currentUser = userData;
+                    showApp();
+                } 
+                else if (typeof userData === 'object') {
+                    if (userData.approved === true) {
+                        currentUser = userData.name;
+                        showApp();
+                    } else {
+                        showToast("⏳ 관리자 승인 대기 중입니다. 관리자에게 문의해주세요.", true);
+                    }
+                }
+            } else {
+                elRegSec.classList.remove('hidden');
+            }
+        }
+
+        function logout() {
+            currentUser = "";
+            currentPin = "";
+            document.getElementById('user-pin').value = "";
+            elAppSec.classList.add('hidden');
+            elLoginSec.classList.remove('hidden');
+            elRegSec.classList.add('hidden');
+        }
+
+        function registerPin() {
+            const name = document.getElementById('user-name').value.trim();
+            if(!name) { 
+                showToast("⚠️ 이름을 입력해주세요.", true); 
+                return; 
+            }
+            
+            pinsRef.child(currentPin).set({
+                name: name,
+                approved: false
+            })
+            .then(() => {
+                showToast("⏳ 등록 완료! 관리자의 승인 후 접속할 수 있습니다.");
+                document.getElementById('user-pin').value = "";
+                document.getElementById('user-name').value = "";
+                elRegSec.classList.add('hidden');
+            })
+            .catch((error) => {
+                showToast("❌ DB 등록 실패: " + error.message, true);
+            });
+        }
+
+        function showApp() {
+            elLoginSec.classList.add('hidden');
+            elAppSec.classList.remove('hidden');
+            document.getElementById('welcome-msg').innerHTML = `✅ 인증 완료! 환영합니다, <strong>${currentUser}</strong>님`;
+            document.getElementById('i-reg').value = currentUser;
+            renderTable();
+        }
+
+        function addRow() {
+            const prod = document.getElementById('i-prod').value.trim();
+            const vend = document.getElementById('i-vend').value.trim();
+            const qty = document.getElementById('i-qty').value;
+            const center = document.getElementById('i-center').value;
+            const reg = document.getElementById('i-reg').value.trim();
+            const reason = document.getElementById('i-reason').value.trim();
+
+            // 🌟 수정: 등록 사유 필수 검증
+            if(!reason) { showToast("🚨 등록 사유를 필수로 입력해야 합니다.", true); return; }
+            if(reason.length > 30) { showToast("🚨 등록 사유는 30자 이내로 작성해주세요.", true); return; }
+
+            if(!qty || parseInt(qty) < 1) { showToast("🚨 수량을 1 이상 입력해야 합니다.", true); return; }
+            if(!center) { showToast("🚨 센터를 선택해야 합니다.", true); return; }
+            if(!prod || !vend) { showToast("🚨 상품과 거래처를 정확히 입력해야 합니다.", true); return; }
+
+            document.getElementById('btn-add').disabled = true;
+
+            const pCode = prod.split(' ')[0] || '-';
+            const pName = prod.substring(pCode.length).trim() || prod;
+            
+            let pSpec = "";
+            const matchedProd = productsData.find(p => p.코드 === pCode);
+            if(matchedProd) pSpec = matchedProd.규격 || "";
+
+            let cleanVend = vend.replace(/ \[.*?\]$/, '').trim();
+            let vendParts = cleanVend.split(" - ");
+            const vCode = vendParts[0].trim() || '-';
+            const vName = vendParts[vendParts.length - 1].trim() || cleanVend;
+            
+            const cleanCenter = center.split(' ')[1].replace("센터", "") || center;
+
+            const now = new Date();
+            const timestampId = now.getTime();
+            
+            const dateStr = now.getFullYear() + "-" + 
+                           String(now.getMonth()+1).padStart(2,'0') + "-" + 
+                           String(now.getDate()).padStart(2,'0') + " " + 
+                           String(now.getHours()).padStart(2,'0') + ":" + 
+                           String(now.getMinutes()).padStart(2,'0');
+
+            const newRow = {
+                id: timestampId,
+                del: false,
+                check: false,
+                pCode: pCode,
+                pName: pName,
+                pSpec: pSpec,
+                qty: qty,
+                vCode: vCode,
+                vName: vName,
+                center: cleanCenter,
+                reg: reg,
+                regReason: reason,
+                date: dateStr,
+                comp: "",
+                compReasonSel: "", 
+                compReasonTxt: ""  
+            };
+            
+            entriesRef.push(newRow)
+            .then(() => {
+                document.getElementById('i-prod').value = "";
+                document.getElementById('i-vend').value = "";
+                document.getElementById('i-qty').value = "";
+                document.getElementById('i-reason').value = "";
+                showToast("✅ 신규 발주 라인이 등록되었습니다.");
+                currentPage = 1; 
+                renderTable();
+            })
+            .catch((error) => {
+                showToast("❌ 등록 실패: " + error.message, true);
+            })
+            .finally(() => {
+                document.getElementById('btn-add').disabled = false;
+            });
+        }
+
+        window.toggleCheck = function(dbKey, currentCheck) {
+            const isChecked = currentCheck === 'true';
+            const compName = !isChecked ? currentUser : "";
+            
+            const selInput = document.getElementById(`comp-reason-sel-${dbKey}`);
+            const txtInput = document.getElementById(`comp-reason-txt-${dbKey}`);
+            
+            const selVal = selInput ? selInput.value : "";
+            const txtVal = txtInput ? txtInput.value.trim() : "";
+
+            entriesRef.child(dbKey).update({ 
+                check: !isChecked,
+                comp: compName,
+                compReasonSel: selVal,
+                compReasonTxt: txtVal
+            });
+        };
+
+        window.updateCompReason = function(dbKey) {
+            const selVal = document.getElementById(`comp-reason-sel-${dbKey}`).value;
+            const txtVal = document.getElementById(`comp-reason-txt-${dbKey}`).value.trim();
+            
+            entriesRef.child(dbKey).update({ 
+                compReasonSel: selVal,
+                compReasonTxt: txtVal 
+            });
+        };
+
+        window.toggleDel = function(dbKey, currentDel) {
+            const isDel = currentDel === 'true';
+            entriesRef.child(dbKey).update({ del: !isDel })
+            .then(() => {
+                if(!isDel) showToast("🗑️ 내역이 휴지통으로 이동되었습니다.");
+                else showToast("✅ 정상적으로 복원되었습니다.");
+            });
+        };
+
+        function resetPageAndRender() {
+            currentPage = 1;
+            renderTable();
+        }
+
+        function changePage(delta) {
+            currentPage += delta;
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.querySelector('#data-table tbody');
+            tbody.innerHTML = '';
+            
+            const filterElement = document.querySelector('input[name="filter"]:checked');
+            if(!filterElement) return; 
+            const filter = filterElement.value;
+            const centerFilter = document.getElementById('f-center').value;
+            const pageLimit = parseInt(document.getElementById('f-limit').value);
+            
+            let activeEntries = entries.filter(e => !e.del);
+            let total = activeEntries.length;
+            let checked = activeEntries.filter(e => e.check).length;
+            let unchecked = total - checked;
+            
+            document.getElementById('m-total').innerText = total + "건";
+            document.getElementById('m-checked').innerText = checked + "건";
+            document.getElementById('m-unchecked').innerText = unchecked + "건";
+
+            let displayData = [...entries].reverse(); 
+            
+            if(filter === 'uncheck') displayData = displayData.filter(e => !e.del && !e.check);
+            else if(filter === 'check') displayData = displayData.filter(e => !e.del && e.check);
+            else if(filter === 'all') displayData = displayData.filter(e => !e.del);
+            else if(filter === 'del') displayData = displayData.filter(e => e.del);
+
+            if(centerFilter !== 'all') {
+                displayData = displayData.filter(e => e.center && e.center.includes(centerFilter));
+            }
+
+            const sPcode = document.getElementById('s-pcode').value.toLowerCase();
+            const sPname = document.getElementById('s-pname').value.toLowerCase();
+            const sVcode = document.getElementById('s-vcode').value.toLowerCase();
+            const sVname = document.getElementById('s-vname').value.toLowerCase();
+            const sReg = document.getElementById('s-reg').value.toLowerCase();
+            const sComp = document.getElementById('s-comp').value.toLowerCase();
+
+            if(sPcode) displayData = displayData.filter(e => (e.pCode||'').toLowerCase().includes(sPcode));
+            if(sPname) displayData = displayData.filter(e => (e.pName||'').toLowerCase().includes(sPname));
+            if(sVcode) displayData = displayData.filter(e => (e.vCode||'').toLowerCase().includes(sVcode));
+            if(sVname) displayData = displayData.filter(e => (e.vName||'').toLowerCase().includes(sVname));
+            if(sReg) displayData = displayData.filter(e => (e.reg||'').toLowerCase().includes(sReg));
+            if(sComp) displayData = displayData.filter(e => (e.comp||'').toLowerCase().includes(sComp));
+
+            const totalRows = displayData.length;
+            const totalPages = Math.max(1, Math.ceil(totalRows / pageLimit));
+            
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            const startIdx = (currentPage - 1) * pageLimit;
+            const endIdx = startIdx + pageLimit;
+            const pagedData = displayData.slice(startIdx, endIdx);
+
+            document.getElementById('page-info').innerText = `${currentPage} / ${totalPages} 페이지`;
+            document.getElementById('total-info').innerText = `검색된 데이터 총 ${totalRows}건`;
+            document.getElementById('btn-prev').disabled = (currentPage === 1);
+            document.getElementById('btn-next').disabled = (currentPage === totalPages);
+
+            if(pagedData.length === 0) {
+                document.getElementById('empty-state').style.display = 'block';
+                document.getElementById('data-table').style.display = 'none';
+            } else {
+                document.getElementById('empty-state').style.display = 'none';
+                document.getElementById('data-table').style.display = 'table';
+                
+                pagedData.forEach(e => {
+                    let vAddr = "주소 정보 없음 (업데이트 필요)";
+                    if (vendorsData.length > 0) {
+                        const matchedVend = vendorsData.find(v => v.코드 == e.vCode);
+                        if (matchedVend && matchedVend.주소) vAddr = matchedVend.주소;
+                    }
+
+                    const currentSel = e.compReasonSel || "";
+                    const currentTxt = e.compReasonTxt !== undefined ? e.compReasonTxt : (e.compReason || "");
+
+                    const isAuthor = (e.reg === currentUser);
+                    const disabledAttr = isAuthor ? 'disabled title="본인이 등록한 내역은 답변 처리가 불가합니다."' : '';
+                    
+                    // 🌟 수정: 체크 시 빈칸일 경우 UI 숨김 처리
+                    const hideInputClass = (e.check && !currentTxt) ? 'hidden' : '';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><input type="checkbox" ${e.del ? 'checked' : ''} onchange="window.toggleDel('${e.dbKey}', '${e.del}')"></td>
+                        <td>
+                            <input type="checkbox" ${e.check ? 'checked' : ''} ${e.del ? 'disabled' : ''} ${disabledAttr} 
+                                   onchange="window.toggleCheck('${e.dbKey}', '${e.check}')">
+                        </td>
+                        <td>${e.pCode || '-'}</td>
+                        <td style="font-weight:500;">${e.pName || '-'}</td>
+                        <td style="font-size:0.9rem; color:#555;">${e.pSpec || '-'}</td>
+                        <td style="font-weight:700; color:var(--primary);">${e.qty || '-'}</td>
+                        <td title="${vAddr}" style="cursor:help; text-decoration:underline dashed #ccc; text-underline-offset: 4px;">${e.vCode || '-'}</td>
+                        <td style="font-weight:500;">${e.vName || '-'}</td>
+                        <td>${e.center || '-'}</td>
+                        <td>${e.reg || '-'}</td>
+                        <td style="font-size:0.85rem; color:#444;">${e.regReason || '-'}</td>
+                        <td style="font-size:0.85rem; color:#888;">${e.date || '-'}</td>
+                        <td>${e.comp || ''}</td>
+                        
+                        <td style="min-width: 140px;">
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                <!-- 🌟 수정: 7가지 드롭다운 목록 -->
+                                <select id="comp-reason-sel-${e.dbKey}" 
+                                        style="width:100%; padding:0.4rem; margin:0; border:1px solid var(--border); border-radius:4px; font-size:0.85rem;"
+                                        ${e.check || e.del ? 'disabled' : ''} ${disabledAttr}
+                                        onchange="window.updateCompReason('${e.dbKey}')">
+                                    <option value="" ${!currentSel ? 'selected' : ''}>- 1차 선택 -</option>
+                                    <option value="1 제약사품절" ${currentSel === '1 제약사품절' ? 'selected' : ''}>1 제약사품절</option>
+                                    <option value="2 수급불안정품목" ${currentSel === '2 수급불안정품목' ? 'selected' : ''}>2 수급불안정품목</option>
+                                    <option value="3 제약사품절,미정" ${currentSel === '3 제약사품절,미정' ? 'selected' : ''}>3 제약사품절,미정</option>
+                                    <option value="4 재고이동중" ${currentSel === '4 재고이동중' ? 'selected' : ''}>4 재고이동중</option>
+                                    <option value="5 유효기한임박" ${currentSel === '5 유효기한임박' ? 'selected' : ''}>5 유효기한임박</option>
+                                    <option value="6 주문불가" ${currentSel === '6 주문불가' ? 'selected' : ''}>6 주문불가</option>
+                                    <option value="7 기타" ${currentSel === '7 기타' ? 'selected' : ''}>7 기타</option>
+                                </select>
+                                <!-- 🌟 수정: 체크되어 있고 내용이 없으면 hidden 처리 -->
+                                <input type="text" id="comp-reason-txt-${e.dbKey}" 
+                                       value="${currentTxt}" 
+                                       placeholder="${e.check ? '' : '2차 상세 사유 기입'}" 
+                                       class="${hideInputClass}"
+                                       style="width:100%; padding:0.4rem; margin:0; border:1px solid var(--border); border-radius:4px; font-size:0.85rem; box-sizing: border-box;"
+                                       ${e.check || e.del ? 'disabled' : ''} ${disabledAttr}
+                                       onchange="window.updateCompReason('${e.dbKey}')">
+                            </div>
+                        </td>
+                    `;
+                    if(e.del) tr.style.opacity = '0.5';
+                    tbody.appendChild(tr);
+                });
+            }
+        }
+
+        window.approvePin = function(pin, name) {
+            pinsRef.child(pin).update({ approved: true })
+            .then(() => {
+                showToast(`✅ ${name}님의 접속이 정상적으로 승인되었습니다.`);
+            })
+            .catch((error) => {
+                showToast("❌ 승인 실패: " + error.message, true);
+            });
+        };
+
+        window.deletePin = function(pin, name) {
+            if(confirm(`[${name}] 직원의 PIN(${pin}) 등록 내역을 정말 삭제하시겠습니까?`)) {
+                pinsRef.child(pin).remove()
+                .then(() => {
+                    showToast(`✅ ${name}님의 PIN 내역이 삭제되었습니다.`);
+                })
+                .catch((error) => {
+                    showToast("❌ 삭제 실패: " + error.message, true);
+                });
+            }
+        };
+
+        function checkAdmin() {
+            if(document.getElementById('admin-pw').value === ADMIN_PW) {
+                document.getElementById('admin-menu').classList.remove('hidden');
+            } else {
+                showToast("⚠️ 비밀번호가 일치하지 않습니다.", true);
+            }
+        }
+
+        function togglePinList() {
+            const display = document.getElementById('pin-list-display');
+            if (!display.classList.contains('hidden')) {
+                display.classList.add('hidden');
+                return;
+            }
+            display.classList.remove('hidden');
+            renderPinList();
+        }
+
+        function renderPinList() {
+            const display = document.getElementById('pin-list-display');
+            const pinKeys = Object.keys(pins);
+            
+            if (pinKeys.length === 0) {
+                display.innerHTML = '<p style="color: gray; text-align: center; margin: 0;">등록된 사용자가 없습니다.</p>';
+                return;
+            }
+
+            const sortedPins = pinKeys.map(pin => {
+                const data = pins[pin];
+                if (typeof data === 'string') {
+                    return { pin: pin, name: data, approved: true };
+                } else {
+                    return { pin: pin, name: data.name, approved: data.approved };
+                }
+            }).sort((a, b) => a.name.localeCompare(b.name));
+            
+            let html = `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #eee; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                    <strong>총 ${sortedPins.length}명 등록됨</strong>
+                </div>
+                <ul style="list-style: none; padding: 0; margin: 0;">`;
+                
+            sortedPins.forEach(item => {
+                let approveBtn = !item.approved ? 
+                    `<button onclick="window.approvePin('${item.pin}', '${item.name}')" style="width: auto; padding: 0.2rem 0.5rem; font-size: 0.8rem; background-color: var(--success); color: white; border: 1px solid var(--success); margin:0; margin-right:0.5rem;">✅ 승인</button>` : '';
+                
+                let statusText = !item.approved ? `<span style="color: #f59e0b; font-weight: bold;">(⏳대기중)</span>` : '';
+                let nameColor = item.approved ? 'var(--primary)' : 'gray';
+
+                html += `<li style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0;">
+                            <div>
+                                <strong style="color: ${nameColor}; font-size: 1.05rem;">${item.name}</strong> 
+                                <span style="color: gray; font-size: 0.85rem; margin-left: 0.5rem;">(PIN: ${item.pin}) ${statusText}</span>
+                            </div>
+                            <div style="display:flex;">
+                                ${approveBtn}
+                                <button onclick="window.deletePin('${item.pin}', '${item.name}')" style="width: auto; padding: 0.2rem 0.5rem; font-size: 0.8rem; background-color: white; color: #ff3333; border: 1px solid #ff3333; margin:0;">삭제</button>
+                            </div>
+                         </li>`;
+            });
+            html += '</ul>';
+            display.innerHTML = html;
+        }
+
+        function clearData() {
+            if(confirm("🚨 경고: 모든 발주 내역이 초기화됩니다. 계속하시겠습니까?")) {
+                entriesRef.remove()
+                .then(() => {
+                    showToast("✅ 모든 발주 내역이 성공적으로 초기화되었습니다.");
+                });
+            }
+        }
+
+        function clearPins() {
+            if(confirm("🚨 경고: 모든 직원의 PIN 등록 내역이 초기화됩니다.")) {
+                pinsRef.remove()
+                .then(() => {
+                    showToast("✅ 모든 직원들의 PIN 등록 내역이 초기화되었습니다.");
+                    logout();
+                });
+            }
+        }
+
+        function exportExcel() {
+            if(entries.length === 0) { showToast("⚠️ 내보낼 데이터가 없습니다.", true); return; }
+
+            const filterElement = document.querySelector('input[name="filter"]:checked');
+            const filter = filterElement ? filterElement.value : 'all';
+            const centerFilter = document.getElementById('f-center').value;
+
+            let filteredEntries = [...entries].reverse();
+
+            if(filter === 'uncheck') filteredEntries = filteredEntries.filter(e => !e.del && !e.check);
+            else if(filter === 'check') filteredEntries = filteredEntries.filter(e => !e.del && e.check);
+            else if(filter === 'all') filteredEntries = filteredEntries.filter(e => !e.del);
+            else if(filter === 'del') filteredEntries = filteredEntries.filter(e => e.del);
+
+            if(centerFilter !== 'all') {
+                filteredEntries = filteredEntries.filter(e => e.center && e.center.includes(centerFilter));
+            }
+            const sPcode = document.getElementById('s-pcode').value.toLowerCase();
+            const sPname = document.getElementById('s-pname').value.toLowerCase();
+            const sVcode = document.getElementById('s-vcode').value.toLowerCase();
+            const sVname = document.getElementById('s-vname').value.toLowerCase();
+            const sReg = document.getElementById('s-reg').value.toLowerCase();
+            const sComp = document.getElementById('s-comp').value.toLowerCase();
+
+            if(sPcode) filteredEntries = filteredEntries.filter(e => (e.pCode||'').toLowerCase().includes(sPcode));
+            if(sPname) filteredEntries = filteredEntries.filter(e => (e.pName||'').toLowerCase().includes(sPname));
+            if(sVcode) filteredEntries = filteredEntries.filter(e => (e.vCode||'').toLowerCase().includes(sVcode));
+            if(sVname) filteredEntries = filteredEntries.filter(e => (e.vName||'').toLowerCase().includes(sVname));
+            if(sReg) filteredEntries = filteredEntries.filter(e => (e.reg||'').toLowerCase().includes(sReg));
+            if(sComp) filteredEntries = filteredEntries.filter(e => (e.comp||'').toLowerCase().includes(sComp));
+
+            if(filteredEntries.length === 0) {
+                showToast("⚠️ 현재 검색/필터 조건에 맞는 데이터가 없습니다.", true);
+                return;
+            }
+            
+            const exportData = filteredEntries.map(e => {
+                const currentSel = e.compReasonSel || "";
+                const currentTxt = e.compReasonTxt !== undefined ? e.compReasonTxt : (e.compReason || "");
+                const combinedReason = [currentSel, currentTxt].filter(Boolean).join(" / ") || '-';
+
+                return {
+                    "ID": e.id,
+                    "삭제상태": e.del ? "🗑️삭제됨" : "정상",
+                    "체크상태": e.check ? "✅답변완료" : "미체크",
+                    "제품코드": e.pCode || '-',
+                    "제품명": e.pName || '-',
+                    "규격": e.pSpec || '-',
+                    "수량": Number(e.qty) || 0,
+                    "거래처코드": e.vCode || '-',
+                    "거래처명": e.vName || '-',
+                    "센터": e.center || '-',
+                    "등록자": e.reg || '-',
+                    "등록 사유": e.regReason || '-',
+                    "등록일시": e.date || '-',
+                    "답변자": e.comp || '-',
+                    "비고": combinedReason
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            
+            worksheet['!cols'] = [
+                { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 25 }, 
+                { wch: 10 }, { wch: 8 },  { wch: 12 }, { wch: 20 }, { wch: 10 }, 
+                { wch: 10 }, { wch: 20 }, { wch: 18 }, { wch: 10 }, { wch: 30 }
+            ];
+            
+            XLSX.utils.book_append_sheet(workbook, worksheet, "발주내역");
+
+            const today = new Date();
+            const dateString = today.getFullYear() + "-" + 
+                   String(today.getMonth() + 1).padStart(2, '0') + "-" + 
+                   String(today.getDate()).padStart(2, '0');
+            
+            let filterName = "전체";
+            if (filter === 'uncheck') filterName = "미체크";
+            else if (filter === 'check') filterName = "답변완료";
+            else if (filter === 'del') filterName = "삭제내역";
+            
+            XLSX.writeFile(workbook, `TJPHARM_발주TF_발주내역_${filterName}_${dateString}.xlsx`);
+        }
+
+        function showToast(msg, isError=false) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            if(isError) toast.style.backgroundColor = '#d32f2f';
+            toast.innerText = msg;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => container.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        function getCurrentDateTimeStr() {
+            const now = new Date();
+            return now.getFullYear() + "-" + 
+                   String(now.getMonth()+1).padStart(2,'0') + "-" + 
+                   String(now.getDate()).padStart(2,'0') + " " + 
+                   String(now.getHours()).padStart(2,'0') + ":" + 
+                   String(now.getMinutes()).padStart(2,'0');
+        }
+
+        async function uploadDataInChunks(refPath, dataArray, timePath) {
+            try {
+                await db.ref(refPath).remove();
+
+                const CHUNK_SIZE = 1000;
+                for (let i = 0; i < dataArray.length; i += CHUNK_SIZE) {
+                    const chunk = dataArray.slice(i, i + CHUNK_SIZE);
+                    const updates = {};
+                    chunk.forEach((item, index) => {
+                        updates[(i + index).toString()] = item;
+                    });
+                    await db.ref(refPath).update(updates);
+                }
+
+                const timeStr = getCurrentDateTimeStr();
+                await db.ref(timePath).set(timeStr);
+
+                showToast(`✅ 데이터 ${dataArray.length}건이 성공적으로 덮어쓰기 되었습니다!`);
+            } catch (err) {
+                showToast("❌ 업로드 중 오류 발생: " + err.message, true);
+            }
+        }
+
+        function uploadProductsExcel() {
+            const fileInput = document.getElementById('file-products');
+            const btn = document.getElementById('btn-upload-prod');
+            if (fileInput.files.length === 0) { showToast("⚠️ 상품색인부 엑셀 파일을 선택해주세요.", true); return; }
+            if (!confirm("🚨 경고: 기존 상품 데이터가 모두 지워지고 이 엑셀 파일 내용으로 덮어쓰기 됩니다. 계속하시겠습니까?")) return;
+
+            btn.disabled = true;
+            btn.innerText = "⏳ 업로드 중...";
+            showToast("⏳ 엑셀을 읽는 중입니다. 잠시만 기다려주세요...");
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
+
+                    const formattedData = jsonData.map(row => {
+                        let code = (row['코드'] !== undefined && row['코드'] !== null) ? String(row['코드']).replace('.0', '').trim() : "";
+                        if (code !== "") code = code.padStart(6, '0');
+                        return {
+                            '코드': code,
+                            '상품명': String(row['상품명'] || '').trim(),
+                            '규격': String(row['규격'] || '').trim()
+                        };
+                    }).filter(row => row['코드'] !== ""); 
+
+                    await uploadDataInChunks('products', formattedData, 'metadata/upload_time/products');
+                    
+                    fileInput.value = ""; 
+                } catch(err) {
+                    showToast("❌ 엑셀 파일을 처리하는 중 오류가 발생했습니다.", true);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = "상품 데이터 덮어쓰기";
+                }
+            };
+            reader.readAsArrayBuffer(fileInput.files[0]);
+        }
+
+        function uploadVendorsExcel() {
+            const fileInput = document.getElementById('file-vendors');
+            const btn = document.getElementById('btn-upload-vend');
+            if (fileInput.files.length === 0) { showToast("⚠️ 매출처색인부 엑셀 파일을 선택해주세요.", true); return; }
+            if (!confirm("🚨 경고: 기존 매출처 데이터가 모두 지워지고 이 엑셀 파일 내용으로 덮어쓰기 됩니다. 계속하시겠습니까?")) return;
+
+            btn.disabled = true;
+            btn.innerText = "⏳ 업로드 중...";
+            showToast("⏳ 엑셀을 읽는 중입니다. 잠시만 기다려주세요...");
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
+
+                    const formattedData = jsonData.map(row => {
+                        let code = (row['코드'] !== undefined && row['코드'] !== null) ? String(row['코드']).replace('.0', '').trim() : "";
+                        return {
+                            '코드': code,
+                            '지역': String(row['지역'] || '').trim(),
+                            '매출처명': String(row['매출처명'] || '').trim(),
+                            '주소': String(row['주소'] || '').trim()
+                        };
+                    }).filter(row => row['코드'] !== "");
+
+                    await uploadDataInChunks('vendors', formattedData, 'metadata/upload_time/vendors');
+
+                    fileInput.value = ""; 
+                } catch(err) {
+                    showToast("❌ 엑셀 파일을 처리하는 중 오류가 발생했습니다.", true);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = "매출처 데이터 덮어쓰기";
+                }
+            };
+            reader.readAsArrayBuffer(fileInput.files[0]);
+        }
+
+        function setupAutocomplete(inputId, listId, dataArrayFunc, searchKeys, displayFunc, onSelect) {
+            const input = document.getElementById(inputId);
+            const list = document.getElementById(listId);
+
+            input.addEventListener('input', function() {
+                const val = this.value.trim().toLowerCase().replace(/\^/g, ' ');
+                const searchTerms = val.split(/\s+/).filter(t => t.length > 0);
+                list.innerHTML = '';
+                
+                if (searchTerms.length === 0) {
+                    list.style.display = 'none';
+                    return;
+                }
+
+                const currentData = dataArrayFunc(); 
+                
+                const matches = currentData.filter(item => {
+                    if(!item) return false;
+                    const combinedStr = searchKeys.map(key => item[key] || '').join(' ').toLowerCase();
+                    return searchTerms.every(term => combinedStr.includes(term));
+                }).slice(0, 50);
+
+                if (matches.length > 0) {
+                    matches.forEach(item => {
+                        const li = document.createElement('li');
+                        li.innerHTML = displayFunc(item);
+                        li.onclick = function() {
+                            onSelect(item);
+                            list.style.display = 'none';
+                        };
+                        list.appendChild(li);
+                    });
+                    list.style.display = 'block';
+                } else {
+                    list.style.display = 'none';
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (e.target !== input) list.style.display = 'none';
+            });
+        }
+
+        setupAutocomplete(
+            'i-vend', 'i-vend-list', 
+            () => {
+                return vendorsData.filter(v => {
+                    const code = v.코드 ? v.코드.toString().toUpperCase() : "";
+                    const name = v.매출처명 ? v.매출처명.toString() : ""; 
+                    
+                    if (name.includes('(특별)')) {
+                        return false;
+                    }
+
+                    return code.startsWith('7') || code.startsWith('S') || code.startsWith('M');
+                });
+            }, 
+            ['매출처명', '지역', '주소', '코드'],
+            (item) => `<strong>${item.매출처명}</strong> <span class="text-small">${item.지역} | ${item.코드} | ${item.주소}</span>`,
+            (item) => {
+                document.getElementById('i-vend').value = `${item.코드} - ${item.매출처명}`; 
+            }
+        );
+
+        setupAutocomplete(
+            'i-prod', 'i-prod-list', 
+            () => productsData, 
+            ['상품명', '코드', '규격'],
+            (item) => `<strong>${item.상품명}</strong> <span class="text-small">${item.코드} | ${item.규격}</span>`,
+            (item) => {
+                document.getElementById('i-prod').value = `${item.코드} ${item.상품명}`;
+            }
+        );
+
+        function setupKeyboardNav(inputId, dropdownId, nextInputId) {
+            const input = document.getElementById(inputId);
+            let currentFocus = -1;
+
+            if (!input) return;
+
+            input.addEventListener("input", function() {
+                currentFocus = -1;
+            });
+
+            input.addEventListener("keydown", function(e) {
+                const dropdown = document.getElementById(dropdownId);
+                if (!dropdown) return;
+
+                let items = dropdown.getElementsByTagName("li");
+                if (items.length === 0) return;
+
+                if (e.key === "ArrowDown") {
+                    currentFocus++;
+                    addActive(items);
+                } else if (e.key === "ArrowUp") {
+                    currentFocus--;
+                    addActive(items);
+                } else if (e.key === "Enter") {
+                    e.preventDefault(); 
+                    if (currentFocus > -1) {
+                        if (items[currentFocus]) {
+                            items[currentFocus].click(); 
+                        }
+                    }
+                    if (nextInputId) {
+                        setTimeout(() => {
+                            document.getElementById(nextInputId).focus();
+                        }, 50);
+                    }
+                }
+            });
+
+            function addActive(items) {
+                if (!items) return false;
+                removeActive(items);
+                if (currentFocus >= items.length) currentFocus = 0;
+                if (currentFocus < 0) currentFocus = (items.length - 1);
+                items[currentFocus].classList.add("autocomplete-active");
+                items[currentFocus].scrollIntoView({ block: "nearest" });
+            }
+
+            function removeActive(items) {
+                for (let i = 0; i < items.length; i++) {
+                    items[i].classList.remove("autocomplete-active");
+                }
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            setupKeyboardNav("i-prod", "i-prod-list", "i-vend"); 
+            setupKeyboardNav("i-vend", "i-vend-list", "i-qty");  
+        });
+
+    </script>
+</body>
+</html>
