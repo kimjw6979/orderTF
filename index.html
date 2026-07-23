@@ -407,7 +407,6 @@
                 <table id="data-table">
                     <thead>
                         <tr>
-                            <!-- 🌟 수정: th 줄바꿈(squishing) 방지 및 너비 설정, 헤더 텍스트 변경 적용 -->
                             <th style="white-space: nowrap; min-width: 65px;">🗑️ 삭제</th>
                             <th style="white-space: nowrap; min-width: 50px;">상태</th>
                             <th style="white-space: nowrap;">매입처</th>
@@ -420,7 +419,7 @@
                             <th style="white-space: nowrap;">센터</th>
                             <th style="white-space: nowrap;">등록자</th>
                             <th style="min-width: 100px;">등록 사유</th>
-                            <th style="white-space: nowrap; font-size: 0.85rem;">등록일시</th>
+                            <th style="white-space: nowrap;">등록일시</th>
                             <th style="white-space: nowrap;">담당자<br>답변자</th>
                             <th style="min-width: 160px;">비고(사유)</th>
                         </tr>
@@ -573,7 +572,6 @@
         function formatCode3(code) {
             if(!code) return "";
             let c = String(code).trim();
-            // 숫자만 있는 경우 3자리 패딩 처리 (정규식 사용하여 안전하게 체크)
             if(/^\d+$/.test(c)) {
                 return c.padStart(3, '0');
             }
@@ -668,16 +666,8 @@
             const reg = document.getElementById('i-reg').value.trim();
             const reason = document.getElementById('i-reason').value.trim();
 
-            // 등록 사유 필수 입력 검증
-            if(!reason) { 
-                showToast("🚨 등록 사유를 필수로 입력해야 합니다.", true); 
-                return; 
-            }
-            if(reason.length > 30) {
-                showToast("🚨 등록 사유는 최대 30자 이내로 작성해주세요.", true); 
-                return;
-            }
-
+            if(!reason) { showToast("🚨 등록 사유를 필수로 입력해야 합니다.", true); return; }
+            if(reason.length > 30) { showToast("🚨 등록 사유는 최대 30자 이내로 작성해주세요.", true); return; }
             if(!qty || parseInt(qty) < 1) { showToast("🚨 수량을 1 이상 입력해야 합니다.", true); return; }
             if(!center) { showToast("🚨 센터를 선택해야 합니다.", true); return; }
             if(!prod || !vend) { showToast("🚨 상품과 거래처를 정확히 입력해야 합니다.", true); return; }
@@ -900,6 +890,17 @@
                     let mgrDisplay = e.managerName && !e.managerName.includes('미등록') ? `<span style="font-weight:bold; color:#1a5c99;">${e.managerName}</span>` : `<span style="color:#ccc;">${e.managerName || '-'}</span>`;
                     let compDisplay = e.comp ? `<span style="color:var(--success); font-weight:bold;">${e.comp}</span>` : `<span style="color:#ccc;">미답변</span>`;
 
+                    // 🌟 1. 날짜 포맷팅 변경 로직 (YYYY-MM-DD HH:mm -> YY.MM.DD HH:mm) 🌟
+                    let displayDate = e.date || '-';
+                    if(displayDate !== '-' && displayDate.includes('-') && displayDate.length >= 10) {
+                        const parts = displayDate.split(' ');
+                        if(parts.length === 2) {
+                            // 앞의 2자리(예: 20)를 자르고, -를 .으로 바꿉니다.
+                            const datePart = parts[0].substring(2).replace(/-/g, '.');
+                            displayDate = `${datePart} ${parts[1]}`;
+                        }
+                    }
+
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                         <td><input type="checkbox" ${e.del ? 'checked' : ''} onchange="window.toggleDel('${e.dbKey}', '${e.del}')"></td>
@@ -917,7 +918,10 @@
                         <td>${e.center || '-'}</td>
                         <td style="font-weight:500;">${e.reg || '-'}</td>
                         <td style="font-size:0.85rem; color:#444; text-align:left; word-break:break-all;">${e.regReason || '-'}</td>
-                        <td style="font-size:0.8rem; color:#aaa;">${e.date.split(' ')[1] || '-'}</td>
+                        
+                        <!-- 🌟 2. 수정된 날짜 포맷 적용 및 자간 약간 조절 🌟 -->
+                        <td style="font-size:0.85rem; color:#777; letter-spacing:-0.5px;">${displayDate}</td>
+                        
                         <td>
                             <div style="line-height:1.4;">
                                 ${mgrDisplay}
@@ -1194,7 +1198,6 @@
             }
         }
 
-        // 핵심 해결: 중복되는 '판매원' 헤더 중 마지막(AC열)의 데이터를 가져옵니다.
         function getLastMatchingColumn(row, keyword) {
             const key = Object.keys(row).reverse().find(k => k.trim().includes(keyword));
             return key && row[key] != null ? String(row[key]).replace(/\.0$/, '').trim() : "";
