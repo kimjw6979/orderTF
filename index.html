@@ -245,12 +245,31 @@
 
             <div style="background: white; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <label style="font-size: 0.9rem; font-weight: bold; color: var(--text); margin: 0;">🏢 매입처색인부</label>
+                    <span id="time-suppliers" style="font-size: 0.75rem; color: var(--primary); font-weight: 500;">기록 없음</span>
+                </div>
+                <input type="file" id="file-suppliers" accept=".xlsx, .xls">
+                <button class="secondary" style="padding: 0.5rem;" onclick="uploadSuppliersExcel()" id="btn-upload-sup">매입처 데이터 덮어쓰기</button>
+            </div>
+
+            <div style="background: white; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <label style="font-size: 0.9rem; font-weight: bold; color: var(--text); margin: 0;">👨‍💼 제약사별담당자</label>
+                    <span id="time-managers" style="font-size: 0.75rem; color: var(--primary); font-weight: 500;">기록 없음</span>
+                </div>
+                <input type="file" id="file-managers" accept=".xlsx, .xls">
+                <button class="secondary" style="padding: 0.5rem;" onclick="uploadManagersExcel()" id="btn-upload-man">담당자 데이터 덮어쓰기</button>
+            </div>
+
+            <div style="background: white; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                     <label style="font-size: 0.9rem; font-weight: bold; color: var(--text); margin: 0;">🏪 매출처색인부</label>
                     <span id="time-vendors" style="font-size: 0.75rem; color: var(--primary); font-weight: 500;">기록 없음</span>
                 </div>
                 <input type="file" id="file-vendors" accept=".xlsx, .xls">
                 <button class="secondary" style="padding: 0.5rem;" onclick="uploadVendorsExcel()" id="btn-upload-vend">매출처 데이터 덮어쓰기</button>
             </div>
+            
             <hr style="border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0;">
 
             <h3 style="font-size: 1rem; margin-top: 2rem;">👥 사용자 관리</h3>
@@ -311,7 +330,6 @@
 
             <!-- Input Form -->
             <h3 style="margin-top: 3rem;">✍️ 신규 발주 추가</h3>
-            <!-- 🌟 수정: 사유(필수) 안내 및 최대 글자수 기입 -->
             <p>상품, 거래처 정보와 사유(필수)를 입력하세요. (사유는 최대 30자)</p>
             
             <div class="form-row">
@@ -334,7 +352,6 @@
                     </select>
                 </div>
                 <div><input type="text" id="i-reg" placeholder="🙋 등록자" readonly></div>
-                <!-- 🌟 수정: 등록 사유 필수(maxlength=30) -->
                 <div><input type="text" id="i-reason" placeholder="📝 등록 사유 (필수)" maxlength="30"></div>
             </div>
             <button onclick="addRow()" id="btn-add">➕ 신규 발주 라인 추가</button>
@@ -392,6 +409,7 @@
                         <tr>
                             <th width="50">🗑️ 삭제</th>
                             <th width="50">상태</th>
+                            <th>매입처</th>
                             <th>제품코드</th>
                             <th>제품명</th>
                             <th>규격</th>
@@ -457,6 +475,9 @@
 
         let vendorsData = [];
         let productsData = [];
+        let suppliersData = [];
+        let managersData = [];
+        
         let db;
         let pinsRef;
         let entriesRef;
@@ -465,6 +486,8 @@
         let currentUser = "";
         let currentPin = "";
         let currentPage = 1;
+        
+        // 관리자 비밀번호
         const ADMIN_PW = "04017";
 
         function toggleExpander() {
@@ -474,9 +497,9 @@
             icon.innerText = exp.classList.contains('open') ? '▼' : '▶';
         }
 
-        // 🔥 회원님의 진짜 Firebase 설정값으로 완벽하게 교체된 부분입니다!
+        // Firebase 설정
         const firebaseConfig = {
-            apiKey: "AIzaSyAA4fgWuHy2HdgNSQg2EVEKiLGy-2Bh9T4",
+            apiKey: "AIzaSyAA4fgWuHy2HdgNSQg2EVEKlGy-2Bh9T4",
             authDomain: "tjpharm2038.firebaseapp.com",
             databaseURL: "https://tjpharm2038-default-rtdb.asia-southeast1.firebasedatabase.app",
             projectId: "tjpharm2038",
@@ -491,27 +514,30 @@
         }
         db = firebase.database();
         
-        // 주문요청용 데이터베이스 경로
         pinsRef = db.ref('tf_pins');
         entriesRef = db.ref('tf_entries');
 
-        // 제품/매출처 데이터는 기존 업로드 내역 공유
+        // 제품/매출처/매입처/담당자 데이터 리스너
         db.ref('vendors').on('value', snap => {
             if(snap.exists()) vendorsData = Object.values(snap.val());
         });
         db.ref('products').on('value', snap => {
             if(snap.exists()) productsData = Object.values(snap.val());
         });
+        db.ref('tf_suppliers').on('value', snap => {
+            if(snap.exists()) suppliersData = Object.values(snap.val());
+        });
+        db.ref('tf_managers').on('value', snap => {
+            if(snap.exists()) managersData = Object.values(snap.val());
+        });
 
         db.ref('metadata/upload_time').on('value', snap => {
             const times = snap.val();
             if(times) {
-                if(times.products) {
-                    document.getElementById('time-products').innerText = `${times.products}`;
-                }
-                if(times.vendors) {
-                    document.getElementById('time-vendors').innerText = `${times.vendors}`;
-                }
+                if(times.products) document.getElementById('time-products').innerText = `${times.products}`;
+                if(times.vendors) document.getElementById('time-vendors').innerText = `${times.vendors}`;
+                if(times.tf_suppliers) document.getElementById('time-suppliers').innerText = `${times.tf_suppliers}`;
+                if(times.tf_managers) document.getElementById('time-managers').innerText = `${times.tf_managers}`;
             }
         });
 
@@ -540,6 +566,21 @@
         }
 
         setupRealtimeListeners();
+
+        // 🌟 유틸 함수: 코드 3자리 맞춤 및 텍스트 정제 🌟
+        function formatCode3(code) {
+            if(!code) return "";
+            let c = String(code).trim();
+            if(/^\d+$/.test(c)) {
+                return c.padStart(3, '0');
+            }
+            return c;
+        }
+
+        function cleanCompanyName(name) {
+            if(!name) return "";
+            return name.replace(/\(주\)/g, '').replace(/\(유\)/g, '').replace(/주식회사/g, '').trim();
+        }
 
         const elLoginSec = document.getElementById('login-section');
         const elAppSec = document.getElementById('app-section');
@@ -624,10 +665,8 @@
             const reg = document.getElementById('i-reg').value.trim();
             const reason = document.getElementById('i-reason').value.trim();
 
-            // 🌟 수정: 등록 사유 필수 검증
             if(!reason) { showToast("🚨 등록 사유를 필수로 입력해야 합니다.", true); return; }
-            if(reason.length > 30) { showToast("🚨 등록 사유는 30자 이내로 작성해주세요.", true); return; }
-
+            if(reason.length > 30) { showToast("🚨 등록 사유는 최대 30자 이내로 작성해주세요.", true); return; }
             if(!qty || parseInt(qty) < 1) { showToast("🚨 수량을 1 이상 입력해야 합니다.", true); return; }
             if(!center) { showToast("🚨 센터를 선택해야 합니다.", true); return; }
             if(!prod || !vend) { showToast("🚨 상품과 거래처를 정확히 입력해야 합니다.", true); return; }
@@ -638,8 +677,31 @@
             const pName = prod.substring(pCode.length).trim() || prod;
             
             let pSpec = "";
+            let supplierName = "";
+            let managerName = "";
+
             const matchedProd = productsData.find(p => p.코드 === pCode);
-            if(matchedProd) pSpec = matchedProd.규격 || "";
+            if(matchedProd) {
+                pSpec = matchedProd.규격 || "";
+                
+                if(matchedProd.판매원) {
+                    const matchCode = formatCode3(matchedProd.판매원);
+                    
+                    const matchedSupplier = suppliersData.find(s => formatCode3(s.코드) === matchCode);
+                    if(matchedSupplier) {
+                        supplierName = cleanCompanyName(matchedSupplier.매입처명);
+                    } else {
+                        supplierName = `미등록(코드:${matchCode})`;
+                    }
+                    
+                    const matchedManager = managersData.find(m => formatCode3(m.주문코드) === matchCode);
+                    if(matchedManager) {
+                        managerName = matchedManager.주문자;
+                    } else {
+                        managerName = `미등록(코드:${matchCode})`;
+                    }
+                }
+            }
 
             let cleanVend = vend.replace(/ \[.*?\]$/, '').trim();
             let vendParts = cleanVend.split(" - ");
@@ -671,6 +733,8 @@
                 reg: reg,
                 regReason: reason,
                 date: dateStr,
+                supplierName: supplierName,
+                managerName: managerName,
                 comp: "",
                 compReasonSel: "", 
                 compReasonTxt: ""  
@@ -808,20 +872,16 @@
                 document.getElementById('data-table').style.display = 'table';
                 
                 pagedData.forEach(e => {
-                    let vAddr = "주소 정보 없음 (업데이트 필요)";
-                    if (vendorsData.length > 0) {
-                        const matchedVend = vendorsData.find(v => v.코드 == e.vCode);
-                        if (matchedVend && matchedVend.주소) vAddr = matchedVend.주소;
-                    }
-
                     const currentSel = e.compReasonSel || "";
                     const currentTxt = e.compReasonTxt !== undefined ? e.compReasonTxt : (e.compReason || "");
 
                     const isAuthor = (e.reg === currentUser);
                     const disabledAttr = isAuthor ? 'disabled title="본인이 등록한 내역은 답변 처리가 불가합니다."' : '';
                     
-                    // 🌟 수정: 체크 시 빈칸일 경우 UI 숨김 처리
                     const hideInputClass = (e.check && !currentTxt) ? 'hidden' : '';
+
+                    let mgrDisplay = e.managerName && !e.managerName.includes('미등록') ? `<span style="font-weight:bold; color:#1a5c99;">${e.managerName}</span>` : `<span style="color:#ccc;">${e.managerName || '-'}</span>`;
+                    let compDisplay = e.comp ? `<span style="color:var(--success); font-weight:bold;">${e.comp}</span>` : `<span style="color:#ccc;">미답변</span>`;
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
@@ -830,21 +890,26 @@
                             <input type="checkbox" ${e.check ? 'checked' : ''} ${e.del ? 'disabled' : ''} ${disabledAttr} 
                                    onchange="window.toggleCheck('${e.dbKey}', '${e.check}')">
                         </td>
-                        <td>${e.pCode || '-'}</td>
-                        <td style="font-weight:500;">${e.pName || '-'}</td>
+                        <td style="color:#1a5c99; font-weight:600; font-size:0.85rem;">${e.supplierName || '-'}</td>
+                        <td style="font-size:0.85rem; color:#888;">${e.pCode || '-'}</td>
+                        <td style="font-weight:600; text-align:left;">${e.pName || '-'}</td>
                         <td style="font-size:0.9rem; color:#555;">${e.pSpec || '-'}</td>
-                        <td style="font-weight:700; color:var(--primary);">${e.qty || '-'}</td>
-                        <td title="${vAddr}" style="cursor:help; text-decoration:underline dashed #ccc; text-underline-offset: 4px;">${e.vCode || '-'}</td>
+                        <td style="font-weight:700; color:var(--primary); font-size:1.1rem;">${e.qty || '-'}</td>
+                        <td style="font-size:0.85rem; color:#888;">${e.vCode || '-'}</td>
                         <td style="font-weight:500;">${e.vName || '-'}</td>
                         <td>${e.center || '-'}</td>
-                        <td>${e.reg || '-'}</td>
-                        <td style="font-size:0.85rem; color:#444;">${e.regReason || '-'}</td>
-                        <td style="font-size:0.85rem; color:#888;">${e.date || '-'}</td>
-                        <td>${e.comp || ''}</td>
-                        
+                        <td style="font-weight:500;">${e.reg || '-'}</td>
+                        <td style="font-size:0.85rem; color:#444; text-align:left; word-break:break-all;">${e.regReason || '-'}</td>
+                        <td style="font-size:0.8rem; color:#aaa;">${e.date.split(' ')[1] || '-'}</td>
+                        <td>
+                            <div style="line-height:1.4;">
+                                ${mgrDisplay}
+                                <hr style="margin:2px 0; border:0; border-top:1px dashed #eee;">
+                                ${compDisplay}
+                            </div>
+                        </td>
                         <td style="min-width: 140px;">
                             <div style="display: flex; flex-direction: column; gap: 4px;">
-                                <!-- 🌟 수정: 7가지 드롭다운 목록 -->
                                 <select id="comp-reason-sel-${e.dbKey}" 
                                         style="width:100%; padding:0.4rem; margin:0; border:1px solid var(--border); border-radius:4px; font-size:0.85rem;"
                                         ${e.check || e.del ? 'disabled' : ''} ${disabledAttr}
@@ -858,7 +923,6 @@
                                     <option value="6 주문불가" ${currentSel === '6 주문불가' ? 'selected' : ''}>6 주문불가</option>
                                     <option value="7 기타" ${currentSel === '7 기타' ? 'selected' : ''}>7 기타</option>
                                 </select>
-                                <!-- 🌟 수정: 체크되어 있고 내용이 없으면 hidden 처리 -->
                                 <input type="text" id="comp-reason-txt-${e.dbKey}" 
                                        value="${currentTxt}" 
                                        placeholder="${e.check ? '' : '2차 상세 사유 기입'}" 
@@ -1022,9 +1086,9 @@
                 const combinedReason = [currentSel, currentTxt].filter(Boolean).join(" / ") || '-';
 
                 return {
-                    "ID": e.id,
                     "삭제상태": e.del ? "🗑️삭제됨" : "정상",
-                    "체크상태": e.check ? "✅답변완료" : "미체크",
+                    "상태": e.check ? "✅답변완료" : "미체크",
+                    "매입처": e.supplierName || '-',
                     "제품코드": e.pCode || '-',
                     "제품명": e.pName || '-',
                     "규격": e.pSpec || '-',
@@ -1035,6 +1099,7 @@
                     "등록자": e.reg || '-',
                     "등록 사유": e.regReason || '-',
                     "등록일시": e.date || '-',
+                    "담당자": e.managerName || '-',
                     "답변자": e.comp || '-',
                     "비고": combinedReason
                 };
@@ -1044,9 +1109,9 @@
             const workbook = XLSX.utils.book_new();
             
             worksheet['!cols'] = [
-                { wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 25 }, 
+                { wch: 10 }, { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 25 }, 
                 { wch: 10 }, { wch: 8 },  { wch: 12 }, { wch: 20 }, { wch: 10 }, 
-                { wch: 10 }, { wch: 20 }, { wch: 18 }, { wch: 10 }, { wch: 30 }
+                { wch: 10 }, { wch: 20 }, { wch: 18 }, { wch: 10 }, { wch: 10 }, { wch: 30 }
             ];
             
             XLSX.utils.book_append_sheet(workbook, worksheet, "발주내역");
@@ -1061,7 +1126,7 @@
             else if (filter === 'check') filterName = "답변완료";
             else if (filter === 'del') filterName = "삭제내역";
             
-            XLSX.writeFile(workbook, `TJPHARM_발주내역_${filterName}_${dateString}.xlsx`);
+            XLSX.writeFile(workbook, `TJPHARM_발주TF_발주내역_${filterName}_${dateString}.xlsx`);
         }
 
         function showToast(msg, isError=false) {
@@ -1111,6 +1176,12 @@
             }
         }
 
+        // 🌟 핵심 해결: 중복되는 '판매원' 헤더 중 마지막(AC열)의 데이터를 가져옵니다.
+        function getLastMatchingColumn(row, keyword) {
+            const key = Object.keys(row).reverse().find(k => k.trim().includes(keyword));
+            return key && row[key] != null ? String(row[key]).replace(/\.0$/, '').trim() : "";
+        }
+
         function uploadProductsExcel() {
             const fileInput = document.getElementById('file-products');
             const btn = document.getElementById('btn-upload-prod');
@@ -1130,12 +1201,17 @@
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
 
                     const formattedData = jsonData.map(row => {
-                        let code = (row['코드'] !== undefined && row['코드'] !== null) ? String(row['코드']).replace('.0', '').trim() : "";
+                        let code = (row['코드'] != null) ? String(row['코드']).replace(/\.0$/, '').trim() : "";
                         if (code !== "") code = code.padStart(6, '0');
+                        
+                        // 🌟 AC열의 '판매원' 데이터 안전하게 추출
+                        let sellerCode = getLastMatchingColumn(row, '판매원');
+
                         return {
                             '코드': code,
-                            '상품명': String(row['상품명'] || '').trim(),
-                            '규격': String(row['규격'] || '').trim()
+                            '상품명': (row['상품명'] != null) ? String(row['상품명']).trim() : "",
+                            '규격': (row['규격'] != null) ? String(row['규격']).trim() : "",
+                            '판매원': sellerCode 
                         };
                     }).filter(row => row['코드'] !== ""); 
 
@@ -1171,12 +1247,12 @@
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
 
                     const formattedData = jsonData.map(row => {
-                        let code = (row['코드'] !== undefined && row['코드'] !== null) ? String(row['코드']).replace('.0', '').trim() : "";
+                        let code = (row['코드'] != null) ? String(row['코드']).replace(/\.0$/, '').trim() : "";
                         return {
                             '코드': code,
-                            '지역': String(row['지역'] || '').trim(),
-                            '매출처명': String(row['매출처명'] || '').trim(),
-                            '주소': String(row['주소'] || '').trim()
+                            '지역': (row['지역'] != null) ? String(row['지역']).trim() : "",
+                            '매출처명': (row['매출처명'] != null) ? String(row['매출처명']).trim() : "",
+                            '주소': (row['주소'] != null) ? String(row['주소']).trim() : ""
                         };
                     }).filter(row => row['코드'] !== "");
 
@@ -1188,6 +1264,86 @@
                 } finally {
                     btn.disabled = false;
                     btn.innerText = "매출처 데이터 덮어쓰기";
+                }
+            };
+            reader.readAsArrayBuffer(fileInput.files[0]);
+        }
+
+        function uploadSuppliersExcel() {
+            const fileInput = document.getElementById('file-suppliers');
+            const btn = document.getElementById('btn-upload-sup');
+            if (fileInput.files.length === 0) { showToast("⚠️ 매입처색인부 엑셀 파일을 선택해주세요.", true); return; }
+            if (!confirm("🚨 경고: 기존 매입처 데이터가 모두 지워지고 이 엑셀 파일 내용으로 덮어쓰기 됩니다. 계속하시겠습니까?")) return;
+
+            btn.disabled = true;
+            btn.innerText = "⏳ 업로드 중...";
+            showToast("⏳ 엑셀을 읽는 중입니다. 잠시만 기다려주세요...");
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
+
+                    const formattedData = jsonData.map(row => {
+                        let code = (row['코드'] != null) ? String(row['코드']).replace(/\.0$/, '').trim() : "";
+                        let name = getLastMatchingColumn(row, '매입처'); // 🌟 유연한 추출
+                        return {
+                            '코드': code,
+                            '매입처명': name
+                        };
+                    }).filter(row => row['코드'] !== "");
+
+                    await uploadDataInChunks('tf_suppliers', formattedData, 'metadata/upload_time/tf_suppliers');
+
+                    fileInput.value = ""; 
+                } catch(err) {
+                    showToast("❌ 엑셀 파일을 처리하는 중 오류가 발생했습니다.", true);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = "매입처 데이터 덮어쓰기";
+                }
+            };
+            reader.readAsArrayBuffer(fileInput.files[0]);
+        }
+
+        function uploadManagersExcel() {
+            const fileInput = document.getElementById('file-managers');
+            const btn = document.getElementById('btn-upload-man');
+            if (fileInput.files.length === 0) { showToast("⚠️ 제약사별담당자 엑셀 파일을 선택해주세요.", true); return; }
+            if (!confirm("🚨 경고: 기존 담당자 데이터가 모두 지워지고 이 엑셀 파일 내용으로 덮어쓰기 됩니다. 계속하시겠습니까?")) return;
+
+            btn.disabled = true;
+            btn.innerText = "⏳ 업로드 중...";
+            showToast("⏳ 엑셀을 읽는 중입니다. 잠시만 기다려주세요...");
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
+
+                    const formattedData = jsonData.map(row => {
+                        let code = getLastMatchingColumn(row, '주문코드'); // 🌟 유연한 추출
+                        let name = getLastMatchingColumn(row, '주문자');
+                        return {
+                            '주문코드': code,
+                            '주문자': name
+                        };
+                    }).filter(row => row['주문코드'] !== "");
+
+                    await uploadDataInChunks('tf_managers', formattedData, 'metadata/upload_time/tf_managers');
+
+                    fileInput.value = ""; 
+                } catch(err) {
+                    showToast("❌ 엑셀 파일을 처리하는 중 오류가 발생했습니다.", true);
+                } finally {
+                    btn.disabled = false;
+                    btn.innerText = "담당자 데이터 덮어쓰기";
                 }
             };
             reader.readAsArrayBuffer(fileInput.files[0]);
@@ -1261,7 +1417,34 @@
             'i-prod', 'i-prod-list', 
             () => productsData, 
             ['상품명', '코드', '규격'],
-            (item) => `<strong>${item.상품명}</strong> <span class="text-small">${item.코드} | ${item.규격}</span>`,
+            (item) => {
+                let sName = "-";
+                let mName = "-";
+                let debugCode = "";
+                
+                if(item.판매원) {
+                    debugCode = formatCode3(item.판매원);
+                    
+                    const sup = suppliersData.find(s => formatCode3(s.코드) === debugCode);
+                    if(sup) {
+                        sName = cleanCompanyName(sup.매입처명);
+                    } else {
+                        sName = `미등록(코드:${debugCode})`; // 🌟 에러 파악용 디버그 출력
+                    }
+                    
+                    const mgr = managersData.find(m => formatCode3(m.주문코드) === debugCode);
+                    if(mgr) {
+                        mName = mgr.주문자;
+                    } else {
+                        mName = `미등록(코드:${debugCode})`; // 🌟 에러 파악용 디버그 출력
+                    }
+                }
+                
+                return `<div style="padding: 2px 0; line-height: 1.4;">
+                            <strong>${item.상품명}</strong> <span class="text-small">${item.코드} | ${item.규격}</span><br>
+                            <span style="font-size: 11px; color: #0066cc; font-weight:500;">🏢 ${sName} &nbsp;|&nbsp; 👨‍💼 ${mName}</span>
+                        </div>`;
+            },
             (item) => {
                 document.getElementById('i-prod').value = `${item.코드} ${item.상품명}`;
             }
