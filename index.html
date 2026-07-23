@@ -407,21 +407,22 @@
                 <table id="data-table">
                     <thead>
                         <tr>
-                            <th width="50">🗑️ 삭제</th>
-                            <th width="50">상태</th>
-                            <th>매입처</th>
-                            <th>제품코드</th>
-                            <th>제품명</th>
-                            <th>규격</th>
-                            <th>수량</th>
-                            <th>거래처코드</th>
-                            <th>거래처명</th>
-                            <th>센터</th>
-                            <th>등록자</th>
-                            <th>등록 사유</th>
-                            <th>등록일시</th>
-                            <th>답변자</th>
-                            <th width="150">비고</th>
+                            <!-- 🌟 수정: th 줄바꿈(squishing) 방지 및 너비 설정, 헤더 텍스트 변경 적용 -->
+                            <th style="white-space: nowrap; min-width: 65px;">🗑️ 삭제</th>
+                            <th style="white-space: nowrap; min-width: 50px;">상태</th>
+                            <th style="white-space: nowrap;">매입처</th>
+                            <th style="white-space: nowrap;">제품코드</th>
+                            <th style="min-width: 180px;">제품명</th>
+                            <th style="white-space: nowrap;">규격</th>
+                            <th style="white-space: nowrap; min-width: 50px;">수량</th>
+                            <th style="white-space: nowrap;">거래처코드</th>
+                            <th style="min-width: 120px;">거래처명</th>
+                            <th style="white-space: nowrap;">센터</th>
+                            <th style="white-space: nowrap;">등록자</th>
+                            <th style="min-width: 100px;">등록 사유</th>
+                            <th style="white-space: nowrap; font-size: 0.85rem;">등록일시</th>
+                            <th style="white-space: nowrap;">담당자<br>답변자</th>
+                            <th style="min-width: 160px;">비고(사유)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -497,7 +498,7 @@
             icon.innerText = exp.classList.contains('open') ? '▼' : '▶';
         }
 
-        // Firebase 설정
+        // Firebase 설정 (독립 DB 경로)
         const firebaseConfig = {
             apiKey: "AIzaSyAA4fgWuHy2HdgNSQg2EVEKlGy-2Bh9T4",
             authDomain: "tjpharm2038.firebaseapp.com",
@@ -514,6 +515,7 @@
         }
         db = firebase.database();
         
+        // 발주TF용 독립 데이터베이스 경로 사용
         pinsRef = db.ref('tf_pins');
         entriesRef = db.ref('tf_entries');
 
@@ -571,6 +573,7 @@
         function formatCode3(code) {
             if(!code) return "";
             let c = String(code).trim();
+            // 숫자만 있는 경우 3자리 패딩 처리 (정규식 사용하여 안전하게 체크)
             if(/^\d+$/.test(c)) {
                 return c.padStart(3, '0');
             }
@@ -665,8 +668,16 @@
             const reg = document.getElementById('i-reg').value.trim();
             const reason = document.getElementById('i-reason').value.trim();
 
-            if(!reason) { showToast("🚨 등록 사유를 필수로 입력해야 합니다.", true); return; }
-            if(reason.length > 30) { showToast("🚨 등록 사유는 최대 30자 이내로 작성해주세요.", true); return; }
+            // 등록 사유 필수 입력 검증
+            if(!reason) { 
+                showToast("🚨 등록 사유를 필수로 입력해야 합니다.", true); 
+                return; 
+            }
+            if(reason.length > 30) {
+                showToast("🚨 등록 사유는 최대 30자 이내로 작성해주세요.", true); 
+                return;
+            }
+
             if(!qty || parseInt(qty) < 1) { showToast("🚨 수량을 1 이상 입력해야 합니다.", true); return; }
             if(!center) { showToast("🚨 센터를 선택해야 합니다.", true); return; }
             if(!prod || !vend) { showToast("🚨 상품과 거래처를 정확히 입력해야 합니다.", true); return; }
@@ -872,6 +883,12 @@
                 document.getElementById('data-table').style.display = 'table';
                 
                 pagedData.forEach(e => {
+                    let vAddr = "주소 정보 없음 (업데이트 필요)";
+                    if (vendorsData.length > 0) {
+                        const matchedVend = vendorsData.find(v => v.코드 == e.vCode);
+                        if (matchedVend && matchedVend.주소) vAddr = matchedVend.주소;
+                    }
+
                     const currentSel = e.compReasonSel || "";
                     const currentTxt = e.compReasonTxt !== undefined ? e.compReasonTxt : (e.compReason || "");
 
@@ -895,7 +912,7 @@
                         <td style="font-weight:600; text-align:left;">${e.pName || '-'}</td>
                         <td style="font-size:0.9rem; color:#555;">${e.pSpec || '-'}</td>
                         <td style="font-weight:700; color:var(--primary); font-size:1.1rem;">${e.qty || '-'}</td>
-                        <td style="font-size:0.85rem; color:#888;">${e.vCode || '-'}</td>
+                        <td title="${vAddr}" style="font-size:0.85rem; color:#888; cursor:help; text-decoration:underline dashed #ccc; text-underline-offset: 4px;">${e.vCode || '-'}</td>
                         <td style="font-weight:500;">${e.vName || '-'}</td>
                         <td>${e.center || '-'}</td>
                         <td style="font-weight:500;">${e.reg || '-'}</td>
@@ -925,6 +942,7 @@
                                 </select>
                                 <input type="text" id="comp-reason-txt-${e.dbKey}" 
                                        value="${currentTxt}" 
+                                       title="${currentTxt.replace(/"/g, '&quot;')}" 
                                        placeholder="${e.check ? '' : '2차 상세 사유 기입'}" 
                                        class="${hideInputClass}"
                                        style="width:100%; padding:0.4rem; margin:0; border:1px solid var(--border); border-radius:4px; font-size:0.85rem; box-sizing: border-box;"
@@ -1176,7 +1194,7 @@
             }
         }
 
-        // 🌟 핵심 해결: 중복되는 '판매원' 헤더 중 마지막(AC열)의 데이터를 가져옵니다.
+        // 핵심 해결: 중복되는 '판매원' 헤더 중 마지막(AC열)의 데이터를 가져옵니다.
         function getLastMatchingColumn(row, keyword) {
             const key = Object.keys(row).reverse().find(k => k.trim().includes(keyword));
             return key && row[key] != null ? String(row[key]).replace(/\.0$/, '').trim() : "";
@@ -1204,7 +1222,6 @@
                         let code = (row['코드'] != null) ? String(row['코드']).replace(/\.0$/, '').trim() : "";
                         if (code !== "") code = code.padStart(6, '0');
                         
-                        // 🌟 AC열의 '판매원' 데이터 안전하게 추출
                         let sellerCode = getLastMatchingColumn(row, '판매원');
 
                         return {
@@ -1289,7 +1306,7 @@
 
                     const formattedData = jsonData.map(row => {
                         let code = (row['코드'] != null) ? String(row['코드']).replace(/\.0$/, '').trim() : "";
-                        let name = getLastMatchingColumn(row, '매입처'); // 🌟 유연한 추출
+                        let name = getLastMatchingColumn(row, '매입처'); 
                         return {
                             '코드': code,
                             '매입처명': name
@@ -1328,7 +1345,7 @@
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
 
                     const formattedData = jsonData.map(row => {
-                        let code = getLastMatchingColumn(row, '주문코드'); // 🌟 유연한 추출
+                        let code = getLastMatchingColumn(row, '주문코드'); 
                         let name = getLastMatchingColumn(row, '주문자');
                         return {
                             '주문코드': code,
@@ -1429,14 +1446,14 @@
                     if(sup) {
                         sName = cleanCompanyName(sup.매입처명);
                     } else {
-                        sName = `미등록(코드:${debugCode})`; // 🌟 에러 파악용 디버그 출력
+                        sName = `미등록(코드:${debugCode})`; 
                     }
                     
                     const mgr = managersData.find(m => formatCode3(m.주문코드) === debugCode);
                     if(mgr) {
                         mName = mgr.주문자;
                     } else {
-                        mName = `미등록(코드:${debugCode})`; // 🌟 에러 파악용 디버그 출력
+                        mName = `미등록(코드:${debugCode})`; 
                     }
                 }
                 
