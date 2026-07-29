@@ -1231,7 +1231,6 @@
             }
         }
 
-        // 🌟 수정: 엑셀 파일 업로드 시 '센타구분' 열 읽어오기 (매출처 엑셀만 해당)
         function getLastMatchingColumn(row, keyword) {
             const key = Object.keys(row).reverse().find(k => k.trim().includes(keyword));
             return key && row[key] != null ? String(row[key]).replace(/\.0$/, '').trim() : "";
@@ -1468,9 +1467,9 @@
             }, 
             ['매출처명', '지역', '주소', '코드', '센터'], // 검색 키워드에 센터 포함
             (item) => {
-                // 🌟 신규: 드롭다운에 센터 이름 표시
-                const centerDisplay = item.센터 ? `[${item.센터}] ` : '';
-                return `<strong>${item.매출처명}</strong> <span class="text-small">${centerDisplay}${item.지역} | ${item.코드} | ${item.주소}</span>`;
+                // 🌟 신규: 드롭다운에 센터 이름 파란색 표시
+                let centerTag = item.센터 ? `<span style="color:#2e90e8; font-weight:bold;">[${item.센터}]</span> ` : '';
+                return `<strong>${item.매출처명}</strong> <span class="text-small">${centerTag}${item.지역} | ${item.코드} | ${item.주소}</span>`;
             },
             (item) => {
                 document.getElementById('i-vend').value = `${item.코드} - ${item.매출처명}`; 
