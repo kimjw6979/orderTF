@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>💊티제이팜 발주TF</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     
+    <!-- ⚠️ 파이어베이스 SDK는 클라우드플레어를 쓰므로 모두 삭제되었습니다. -->
     <!-- 엑셀 전용 무료 번역기 (SheetJS) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
@@ -78,7 +76,7 @@
         }
         
         /* Typography */
-        h1 { font-size: 2.2rem; font-weight: 700; margin-top: 0; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+        h1 { font-size: 2.2rem; font-weight: 700; margin-top: 0; padding-bottom: 1rem; border-bottom: 1px solid var(--border); display:flex; justify-content: space-between; align-items:center; }
         h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
         h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; }
         p { margin: 0 0 1rem 0; line-height: 1.5; color: var(--text-light); }
@@ -195,7 +193,7 @@
         /* 모바일 반응형 디자인 */
         @media (max-width: 768px) {
             .main { padding: 1.5rem 1rem; }
-            h1 { font-size: 1.5rem; }
+            h1 { font-size: 1.5rem; flex-direction: column; align-items: flex-start; gap: 0.5rem;}
             .metrics { flex-direction: column; gap: 1rem; }
             .form-row { grid-template-columns: 1fr; }
             .search-grid { grid-template-columns: 1fr; }
@@ -237,39 +235,27 @@
             <p style="font-size: 0.8rem; color: #ff3333; font-weight: bold;">※ 업로드 시 기존 데이터는 덮어쓰기 됩니다.</p>
             
             <div style="background: white; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <label style="font-size: 0.9rem; font-weight: bold; color: var(--text); margin: 0;">📦 상품색인부</label>
-                    <span id="time-products" style="font-size: 0.75rem; color: var(--primary); font-weight: 500;">기록 없음</span>
-                </div>
+                <label style="font-size: 0.9rem; font-weight: bold; margin-bottom:0.5rem; display:block;">📦 상품색인부</label>
                 <input type="file" id="file-products" accept=".xlsx, .xls">
-                <button class="secondary" style="padding: 0.5rem;" onclick="uploadProductsExcel()" id="btn-upload-prod">상품 데이터 덮어쓰기</button>
+                <button class="secondary" style="padding: 0.5rem;" onclick="uploadExcel('products', 'file-products')">상품 데이터 덮어쓰기</button>
             </div>
 
             <div style="background: white; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <label style="font-size: 0.9rem; font-weight: bold; color: var(--text); margin: 0;">🏢 매입처색인부</label>
-                    <span id="time-suppliers" style="font-size: 0.75rem; color: var(--primary); font-weight: 500;">기록 없음</span>
-                </div>
+                <label style="font-size: 0.9rem; font-weight: bold; margin-bottom:0.5rem; display:block;">🏢 매입처색인부</label>
                 <input type="file" id="file-suppliers" accept=".xlsx, .xls">
-                <button class="secondary" style="padding: 0.5rem;" onclick="uploadSuppliersExcel()" id="btn-upload-sup">매입처 데이터 덮어쓰기</button>
+                <button class="secondary" style="padding: 0.5rem;" onclick="uploadExcel('suppliers', 'file-suppliers')">매입처 데이터 덮어쓰기</button>
             </div>
 
             <div style="background: white; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <label style="font-size: 0.9rem; font-weight: bold; color: var(--text); margin: 0;">👨‍💼 제약사별담당자</label>
-                    <span id="time-managers" style="font-size: 0.75rem; color: var(--primary); font-weight: 500;">기록 없음</span>
-                </div>
+                <label style="font-size: 0.9rem; font-weight: bold; margin-bottom:0.5rem; display:block;">👨‍💼 제약사별담당자</label>
                 <input type="file" id="file-managers" accept=".xlsx, .xls">
-                <button class="secondary" style="padding: 0.5rem;" onclick="uploadManagersExcel()" id="btn-upload-man">담당자 데이터 덮어쓰기</button>
+                <button class="secondary" style="padding: 0.5rem;" onclick="uploadExcel('managers', 'file-managers')">담당자 데이터 덮어쓰기</button>
             </div>
 
             <div style="background: white; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <label style="font-size: 0.9rem; font-weight: bold; color: var(--text); margin: 0;">🏪 매출처색인부</label>
-                    <span id="time-vendors" style="font-size: 0.75rem; color: var(--primary); font-weight: 500;">기록 없음</span>
-                </div>
+                <label style="font-size: 0.9rem; font-weight: bold; margin-bottom:0.5rem; display:block;">🏪 매출처색인부</label>
                 <input type="file" id="file-vendors" accept=".xlsx, .xls">
-                <button class="secondary" style="padding: 0.5rem;" onclick="uploadVendorsExcel()" id="btn-upload-vend">매출처 데이터 덮어쓰기</button>
+                <button class="secondary" style="padding: 0.5rem;" onclick="uploadExcel('vendors', 'file-vendors')">매출처 데이터 덮어쓰기</button>
             </div>
             
             <hr style="border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0;">
@@ -282,14 +268,16 @@
             </div>
             
             <h3 style="font-size: 1rem; margin-top: 2rem;">🚨 시스템 초기화</h3>
-            <p style="font-size: 0.8rem;">테스트 종료 시 초기화 (데이터 복구 불가)</p>
-            <button style="background-color: var(--text); border-color: var(--text); margin-bottom: 0.5rem;" onclick="clearData()">🗑️ 발주 내역 전체 초기화</button>
-            <button style="background-color: var(--text); border-color: var(--text); margin-bottom: 0.5rem;" onclick="clearPins()">🔄 PIN 등록 내역 전체 초기화</button>
+            <button style="background-color: var(--text); border-color: var(--text); margin-bottom: 0.5rem;" onclick="clearData('clearAllEntries')">🗑️ 발주 내역 전체 초기화</button>
+            <button style="background-color: var(--text); border-color: var(--text); margin-bottom: 0.5rem;" onclick="clearData('clearAllPins')">🔄 PIN 내역 전체 초기화</button>
         </div>
     </div>
 
     <div class="main">
-        <h1>📋 티제이팜 주문요청 게시판 <span style="font-size: 1rem; font-weight: normal; color: #2e90e8;">(실시간 공유 🟢)</span></h1>
+        <h1>
+            <span>📋 티제이팜 주문요청 게시판 <span style="font-size: 1rem; font-weight: normal; color: #2e90e8;">(Cloudflare D1 연결 🟢)</span></span>
+            <button onclick="loadAllData()" class="secondary" style="width:auto; padding:0.4rem 1rem; font-size:0.9rem;">🔄 데이터 새로고침</button>
+        </h1>
         
         <!-- Login Section -->
         <div id="login-section" style="max-width: 500px; margin: 4rem auto; text-align: center;">
@@ -440,7 +428,7 @@
                     데이터를 불러오는 중이거나 등록된 내역이 없습니다.
                 </div>
             </div>
-            <p style="font-size: 0.85rem; margin-top: 1rem;">💡 실시간으로 데이터가 연동됩니다. <b>지정된 담당자</b>만 확인(답변 및 입고) 처리가 가능합니다.</p>
+            <p style="font-size: 0.85rem; margin-top: 1rem;">💡 데이터를 새로 확인하려면 상단의 <b>[🔄 데이터 새로고침]</b> 버튼을 누르세요. <b>지정된 담당자</b>만 확인(답변 및 입고) 처리가 가능합니다.</p>
             
             <!-- Pagination -->
             <div class="pagination">
@@ -457,40 +445,14 @@
     <div class="toast-container" id="toast-container"></div>
 
     <script>
-        // 페이지 로드 후 스플래시 화면 숨기기
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const splash = document.getElementById('splash-screen');
-                if(splash) {
-                    splash.style.opacity = '0';
-                    setTimeout(() => splash.style.display = 'none', 800);
-                }
-            }, 1500);
-        });
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const showBtn = document.getElementById('btn-show-sidebar');
-            
-            if (sidebar.classList.contains('hidden')) {
-                sidebar.classList.remove('hidden');
-                showBtn.classList.add('hidden');
-            } else {
-                sidebar.classList.add('hidden');
-                showBtn.classList.remove('hidden');
-            }
-        }
-
+        // 클라우드플레어 D1 백엔드 연동용 전역 변수
         let vendorsData = [];
         let productsData = [];
         let suppliersData = [];
         let managersData = [];
-        
-        let db;
-        let pinsRef;
-        let entriesRef;
         let entries = [];
-        let pins = {};
+        let pins = [];
+        
         let currentUser = "";
         let currentPin = "";
         let currentPage = 1;
@@ -501,83 +463,65 @@
         // 🌟 권한이 부여된 담당자 명단
         const AUTHORIZED_USERS = ['김현중', '김정욱', '박형삼', '박지영', '권은숙', '최유리', '송요운'];
 
-        function toggleExpander() {
-            const exp = document.getElementById('search-expander');
-            const icon = document.getElementById('expander-icon');
-            exp.classList.toggle('open');
-            icon.innerText = exp.classList.contains('open') ? '▼' : '▶';
-        }
-
-        // Firebase 설정 (독립 DB 경로)
-        const firebaseConfig = {
-            apiKey: "AIzaSyAA4fgWuHy2HdgNSQg2EVEKlGy-2Bh9T4",
-            authDomain: "tjpharm2038.firebaseapp.com",
-            databaseURL: "https://tjpharm2038-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "tjpharm2038",
-            storageBucket: "tjpharm2038.firebasestorage.app",
-            messagingSenderId: "936727740698",
-            appId: "1:936727740698:web:359e35c4a94a6d5d746ca3",
-            measurementId: "G-T273Z09FGK"
-        };
-
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        db = firebase.database();
-        
-        // 발주TF용 독립 데이터베이스 경로 사용
-        pinsRef = db.ref('tf_pins');
-        entriesRef = db.ref('tf_entries');
-
-        // 제품/매출처/매입처/담당자 데이터 리스너
-        db.ref('vendors').on('value', snap => {
-            if(snap.exists()) vendorsData = Object.values(snap.val());
-        });
-        db.ref('products').on('value', snap => {
-            if(snap.exists()) productsData = Object.values(snap.val());
-        });
-        db.ref('tf_suppliers').on('value', snap => {
-            if(snap.exists()) suppliersData = Object.values(snap.val());
-        });
-        db.ref('tf_managers').on('value', snap => {
-            if(snap.exists()) managersData = Object.values(snap.val());
-        });
-
-        db.ref('metadata/upload_time').on('value', snap => {
-            const times = snap.val();
-            if(times) {
-                if(times.products) document.getElementById('time-products').innerText = `${times.products}`;
-                if(times.vendors) document.getElementById('time-vendors').innerText = `${times.vendors}`;
-                if(times.tf_suppliers) document.getElementById('time-suppliers').innerText = `${times.tf_suppliers}`;
-                if(times.tf_managers) document.getElementById('time-managers').innerText = `${times.tf_managers}`;
-            }
-        });
-
-        function setupRealtimeListeners() {
-            pinsRef.on('value', (snapshot) => {
-                pins = snapshot.val() || {};
-                const display = document.getElementById('pin-list-display');
-                if (!display.classList.contains('hidden')) {
-                    renderPinList();
+        // 페이지 로드 후 스플래시 화면 숨기기
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                if(splash) {
+                    splash.style.opacity = '0';
+                    setTimeout(() => splash.style.display = 'none', 800);
                 }
-            });
+            }, 1500);
+            
+            // 페이지 접속 시 클라우드플레어 DB에서 데이터를 모두 가져옵니다.
+            loadAllData(); 
+        });
 
-            entriesRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                entries = [];
-                if (data) {
-                    for (let key in data) {
-                        entries.push({...data[key], dbKey: key});
-                    }
-                }
-                entries.sort((a, b) => a.id - b.id);
+        // 🌟 핵심 API 통신 함수 (파이어베이스 대체)
+        async function loadAllData() {
+            try {
+                const res = await fetch('/api?action=getAll');
+                const data = await res.json();
+                
+                productsData = data.products || [];
+                vendorsData = data.vendors || [];
+                suppliersData = data.suppliers || [];
+                managersData = data.managers || [];
+                pins = data.pins || [];
+                entries = data.entries || [];
+                
                 if (!document.getElementById('app-section').classList.contains('hidden')) {
                     renderTable();
+                    showToast("🔄 최신 데이터를 불러왔습니다.");
                 }
-            });
+            } catch (e) {
+                console.error(e);
+                showToast("데이터 로딩 중 오류가 발생했습니다. (API 확인 필요)", true);
+            }
         }
 
-        setupRealtimeListeners();
+        async function saveEntryToDB(entryData) {
+            await fetch('/api?action=addEntry', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(entryData)
+            });
+            await loadAllData(); // 완료 후 데이터 갱신
+        }
+
+        async function updateEntryInDB(id, updates) {
+            await fetch('/api?action=updateEntry', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, updates })
+            });
+            // 체크, 입고 등의 처리는 즉각 반영을 위해 로컬 변수도 수정 후 렌더링
+            const entryIndex = entries.findIndex(e => e.id === id);
+            if(entryIndex > -1) {
+                entries[entryIndex] = { ...entries[entryIndex], ...updates };
+            }
+            renderTable();
+        }
 
         function formatCode3(code) {
             if(!code) return "";
@@ -603,26 +547,16 @@
                 showToast("⚠️ PIN 번호는 반드시 숫자 4자리로 입력해야 합니다.", true);
                 return;
             }
-            if(!db) {
-                showToast("⚠️ DB가 아직 연결되지 않았습니다. 잠시 후 다시 시도해주세요.", true);
-                return;
-            }
 
             currentPin = pin;
-            if(pins[pin]) {
-                const userData = pins[pin];
-                
-                if (typeof userData === 'string') {
-                    currentUser = userData;
+            const userData = pins.find(p => p.pin === pin);
+            
+            if(userData) {
+                if (userData.approved === 1 || userData.approved === true) {
+                    currentUser = userData.name;
                     showApp();
-                } 
-                else if (typeof userData === 'object') {
-                    if (userData.approved === true) {
-                        currentUser = userData.name;
-                        showApp();
-                    } else {
-                        showToast("⏳ 관리자 승인 대기 중입니다. 관리자에게 문의해주세요.", true);
-                    }
+                } else {
+                    showToast("⏳ 관리자 승인 대기 중입니다. 관리자에게 문의해주세요.", true);
                 }
             } else {
                 elRegSec.classList.remove('hidden');
@@ -638,26 +572,24 @@
             elRegSec.classList.add('hidden');
         }
 
-        function registerPin() {
+        async function registerPin() {
             const name = document.getElementById('user-name').value.trim();
             if(!name) { 
                 showToast("⚠️ 이름을 입력해주세요.", true); 
                 return; 
             }
             
-            pinsRef.child(currentPin).set({
-                name: name,
-                approved: false
-            })
-            .then(() => {
-                showToast("⏳ 등록 완료! 관리자의 승인 후 접속할 수 있습니다.");
-                document.getElementById('user-pin').value = "";
-                document.getElementById('user-name').value = "";
-                elRegSec.classList.add('hidden');
-            })
-            .catch((error) => {
-                showToast("❌ DB 등록 실패: " + error.message, true);
+            await fetch('/api?action=addPin', {
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin: currentPin, name: name, approved: false })
             });
+            
+            showToast("⏳ 등록 완료! 관리자의 승인 후 접속할 수 있습니다.");
+            document.getElementById('user-pin').value = "";
+            document.getElementById('user-name').value = "";
+            elRegSec.classList.add('hidden');
+            loadAllData();
         }
 
         function showApp() {
@@ -691,23 +623,23 @@
             let supplierName = "";
             let managerName = "";
 
-            const matchedProd = productsData.find(p => p.코드 === pCode);
+            const matchedProd = productsData.find(p => p.code === pCode);
             if(matchedProd) {
-                pSpec = matchedProd.규격 || "";
+                pSpec = matchedProd.spec || "";
                 
-                if(matchedProd.판매원) {
-                    const matchCode = formatCode3(matchedProd.판매원);
+                if(matchedProd.seller) {
+                    const matchCode = formatCode3(matchedProd.seller);
                     
-                    const matchedSupplier = suppliersData.find(s => formatCode3(s.코드) === matchCode);
+                    const matchedSupplier = suppliersData.find(s => formatCode3(s.code) === matchCode);
                     if(matchedSupplier) {
-                        supplierName = cleanCompanyName(matchedSupplier.매입처명);
+                        supplierName = cleanCompanyName(matchedSupplier.name);
                     } else {
                         supplierName = `미등록(코드:${matchCode})`;
                     }
                     
-                    const matchedManager = managersData.find(m => formatCode3(m.주문코드) === matchCode);
+                    const matchedManager = managersData.find(m => formatCode3(m.code) === matchCode);
                     if(matchedManager) {
-                        managerName = matchedManager.주문자;
+                        managerName = matchedManager.name;
                     } else {
                         managerName = `미등록(코드:${matchCode})`;
                     }
@@ -722,8 +654,6 @@
             const cleanCenter = center.split(' ')[1].replace("센터", "") || center;
 
             const now = new Date();
-            const timestampId = now.getTime();
-            
             const dateStr = now.getFullYear() + "-" + 
                            String(now.getMonth()+1).padStart(2,'0') + "-" + 
                            String(now.getDate()).padStart(2,'0') + " " + 
@@ -731,7 +661,7 @@
                            String(now.getMinutes()).padStart(2,'0');
 
             const newRow = {
-                id: timestampId,
+                id: String(now.getTime()),
                 del: false,
                 check: false,
                 recv: false, 
@@ -744,7 +674,7 @@
                 center: cleanCenter,
                 reg: reg,
                 regReason: reason,
-                date: dateStr,
+                dateStr: dateStr,
                 supplierName: supplierName,
                 managerName: managerName,
                 comp: "",
@@ -752,35 +682,31 @@
                 compReasonTxt: ""  
             };
             
-            entriesRef.push(newRow)
-            .then(() => {
+            saveEntryToDB(newRow).then(() => {
                 document.getElementById('i-prod').value = "";
                 document.getElementById('i-vend').value = "";
                 document.getElementById('i-qty').value = "";
                 document.getElementById('i-reason').value = "";
                 showToast("✅ 신규 발주 라인이 등록되었습니다.");
                 currentPage = 1; 
-                renderTable();
-            })
-            .catch((error) => {
+            }).catch((error) => {
                 showToast("❌ 등록 실패: " + error.message, true);
-            })
-            .finally(() => {
+            }).finally(() => {
                 document.getElementById('btn-add').disabled = false;
             });
         }
 
-        window.toggleCheck = function(dbKey, currentCheck) {
-            const isChecked = currentCheck === 'true';
+        window.toggleCheck = function(id, currentCheck) {
+            const isChecked = currentCheck === 'true' || currentCheck === 1;
             const compName = !isChecked ? currentUser : "";
             
-            const selInput = document.getElementById(`comp-reason-sel-${dbKey}`);
-            const txtInput = document.getElementById(`comp-reason-txt-${dbKey}`);
+            const selInput = document.getElementById(`comp-reason-sel-${id}`);
+            const txtInput = document.getElementById(`comp-reason-txt-${id}`);
             
             const selVal = selInput ? selInput.value : "";
             const txtVal = txtInput ? txtInput.value.trim() : "";
 
-            entriesRef.child(dbKey).update({ 
+            updateEntryInDB(id, { 
                 check: !isChecked,
                 comp: compName,
                 compReasonSel: selVal,
@@ -788,28 +714,26 @@
             });
         };
 
-        window.toggleRecv = function(dbKey, currentRecv) {
-            const isRecv = currentRecv === 'true';
-            entriesRef.child(dbKey).update({ recv: !isRecv })
-            .then(() => {
+        window.toggleRecv = function(id, currentRecv) {
+            const isRecv = currentRecv === 'true' || currentRecv === 1;
+            updateEntryInDB(id, { recv: !isRecv }).then(() => {
                 showToast(!isRecv ? "📦 정상적으로 입고 처리되었습니다." : "입고 처리가 취소되었습니다.");
             });
         };
 
-        window.updateCompReason = function(dbKey) {
-            const selVal = document.getElementById(`comp-reason-sel-${dbKey}`).value;
-            const txtVal = document.getElementById(`comp-reason-txt-${dbKey}`).value.trim();
+        window.updateCompReason = function(id) {
+            const selVal = document.getElementById(`comp-reason-sel-${id}`).value;
+            const txtVal = document.getElementById(`comp-reason-txt-${id}`).value.trim();
             
-            entriesRef.child(dbKey).update({ 
+            updateEntryInDB(id, { 
                 compReasonSel: selVal,
                 compReasonTxt: txtVal 
             });
         };
 
-        window.toggleDel = function(dbKey, currentDel) {
-            const isDel = currentDel === 'true';
-            entriesRef.child(dbKey).update({ del: !isDel })
-            .then(() => {
+        window.toggleDel = function(id, currentDel) {
+            const isDel = currentDel === 'true' || currentDel === 1;
+            updateEntryInDB(id, { del: !isDel }).then(() => {
                 if(!isDel) showToast("🗑️ 내역이 휴지통으로 이동되었습니다.");
                 else showToast("✅ 정상적으로 복원되었습니다.");
             });
@@ -835,25 +759,28 @@
             const centerFilter = document.getElementById('f-center').value;
             const pageLimit = parseInt(document.getElementById('f-limit').value);
             
-            let activeEntries = entries.filter(e => !e.del);
+            // SQLite boolean은 0과 1로 저장될 수 있으므로 유연하게 처리
+            const isTrue = val => val === 1 || val === true || val === 'true';
+
+            let activeEntries = entries.filter(e => !isTrue(e.del));
             let total = activeEntries.length;
             
-            let received = activeEntries.filter(e => e.recv).length;
-            let checked = activeEntries.filter(e => e.check && !e.recv).length;
-            let unchecked = activeEntries.filter(e => !e.check && !e.recv).length;
+            let received = activeEntries.filter(e => isTrue(e.recv)).length;
+            let checked = activeEntries.filter(e => isTrue(e.check_status) && !isTrue(e.recv)).length;
+            let unchecked = activeEntries.filter(e => !isTrue(e.check_status) && !isTrue(e.recv)).length;
             
             document.getElementById('m-total').innerText = total + "건";
             document.getElementById('m-unchecked').innerText = unchecked + "건";
             document.getElementById('m-checked').innerText = checked + "건";
             document.getElementById('m-recv').innerText = received + "건";
 
-            let displayData = [...entries].reverse(); 
+            let displayData = [...entries]; 
             
-            if(filter === 'uncheck') displayData = displayData.filter(e => !e.del && !e.check && !e.recv);
-            else if(filter === 'check') displayData = displayData.filter(e => !e.del && e.check && !e.recv);
-            else if(filter === 'recv') displayData = displayData.filter(e => !e.del && e.recv);
-            else if(filter === 'all') displayData = displayData.filter(e => !e.del);
-            else if(filter === 'del') displayData = displayData.filter(e => e.del);
+            if(filter === 'uncheck') displayData = displayData.filter(e => !isTrue(e.del) && !isTrue(e.check_status) && !isTrue(e.recv));
+            else if(filter === 'check') displayData = displayData.filter(e => !isTrue(e.del) && isTrue(e.check_status) && !isTrue(e.recv));
+            else if(filter === 'recv') displayData = displayData.filter(e => !isTrue(e.del) && isTrue(e.recv));
+            else if(filter === 'all') displayData = displayData.filter(e => !isTrue(e.del));
+            else if(filter === 'del') displayData = displayData.filter(e => isTrue(e.del));
 
             if(centerFilter !== 'all') {
                 displayData = displayData.filter(e => e.center && e.center.includes(centerFilter));
@@ -898,8 +825,8 @@
                 pagedData.forEach(e => {
                     let vAddr = "주소 정보 없음 (업데이트 필요)";
                     if (vendorsData.length > 0) {
-                        const matchedVend = vendorsData.find(v => v.코드 == e.vCode);
-                        if (matchedVend && matchedVend.주소) vAddr = matchedVend.주소;
+                        const matchedVend = vendorsData.find(v => v.code == e.vCode);
+                        if (matchedVend && matchedVend.address) vAddr = matchedVend.address;
                     }
 
                     const currentSel = e.compReasonSel || "";
@@ -915,7 +842,11 @@
                         disabledAttr = 'disabled title="본인이 등록한 내역은 처리 불가합니다."';
                     }
                     
-                    const hideInputClass = (e.check && !currentTxt) ? 'hidden' : '';
+                    const delStatus = isTrue(e.del);
+                    const chkStatus = isTrue(e.check_status);
+                    const recvStatus = isTrue(e.recv);
+
+                    const hideInputClass = (chkStatus && !currentTxt) ? 'hidden' : '';
 
                     let mgrDisplay = e.managerName && !e.managerName.includes('미등록') ? `<span style="font-weight:bold; color:#1a5c99;">${e.managerName}</span>` : `<span style="color:#ccc;">${e.managerName || '-'}</span>`;
                     let compDisplay = e.comp ? `<span style="color:var(--success); font-weight:bold;">${e.comp}</span>` : `<span style="color:#ccc;">미답변</span>`;
@@ -930,17 +861,17 @@
                     }
 
                     const tr = document.createElement('tr');
-                    if(e.recv) tr.style.backgroundColor = 'var(--received)';
+                    if(recvStatus) tr.style.backgroundColor = 'var(--received)';
                     
                     tr.innerHTML = `
-                        <td><input type="checkbox" ${e.del ? 'checked' : ''} onchange="window.toggleDel('${e.dbKey}', '${e.del}')"></td>
+                        <td><input type="checkbox" ${delStatus ? 'checked' : ''} onchange="window.toggleDel('${e.id}', '${delStatus}')"></td>
                         <td>
-                            <input type="checkbox" ${e.check ? 'checked' : ''} ${e.del ? 'disabled' : ''} ${disabledAttr} 
-                                   onchange="window.toggleCheck('${e.dbKey}', '${e.check}')">
+                            <input type="checkbox" ${chkStatus ? 'checked' : ''} ${delStatus ? 'disabled' : ''} ${disabledAttr} 
+                                   onchange="window.toggleCheck('${e.id}', '${chkStatus}')">
                         </td>
                         <td>
-                            <input type="checkbox" class="recv-cb" ${e.recv ? 'checked' : ''} ${e.del ? 'disabled' : ''} ${disabledAttr} 
-                                   onchange="window.toggleRecv('${e.dbKey}', '${e.recv}')">
+                            <input type="checkbox" class="recv-cb" ${recvStatus ? 'checked' : ''} ${delStatus ? 'disabled' : ''} ${disabledAttr} 
+                                   onchange="window.toggleRecv('${e.id}', '${recvStatus}')">
                         </td>
                         <td style="color:#1a5c99; font-weight:600; font-size:0.85rem;">${e.supplierName || '-'}</td>
                         <td style="font-size:0.85rem; color:#888;">${e.pCode || '-'}</td>
@@ -962,10 +893,10 @@
                         </td>
                         <td style="min-width: 140px;">
                             <div style="display: flex; flex-direction: column; gap: 4px;">
-                                <select id="comp-reason-sel-${e.dbKey}" 
+                                <select id="comp-reason-sel-${e.id}" 
                                         style="width:100%; padding:0.4rem; margin:0; border:1px solid var(--border); border-radius:4px; font-size:0.85rem;"
-                                        ${e.check || e.del ? 'disabled' : ''} ${disabledAttr}
-                                        onchange="window.updateCompReason('${e.dbKey}')">
+                                        ${chkStatus || delStatus ? 'disabled' : ''} ${disabledAttr}
+                                        onchange="window.updateCompReason('${e.id}')">
                                     <option value="" ${!currentSel ? 'selected' : ''}>- 1차 선택 -</option>
                                     <option value="1 제약사품절" ${currentSel === '1 제약사품절' ? 'selected' : ''}>1 제약사품절</option>
                                     <option value="2 수급불안정품목" ${currentSel === '2 수급불안정품목' ? 'selected' : ''}>2 수급불안정품목</option>
@@ -975,44 +906,22 @@
                                     <option value="6 주문불가" ${currentSel === '6 주문불가' ? 'selected' : ''}>6 주문불가</option>
                                     <option value="7 기타" ${currentSel === '7 기타' ? 'selected' : ''}>7 기타</option>
                                 </select>
-                                <input type="text" id="comp-reason-txt-${e.dbKey}" 
+                                <input type="text" id="comp-reason-txt-${e.id}" 
                                        value="${currentTxt}" 
                                        title="${currentTxt.replace(/"/g, '&quot;')}" 
-                                       placeholder="${e.check ? '' : '2차 상세 사유 기입'}" 
+                                       placeholder="${chkStatus ? '' : '2차 상세 사유 기입'}" 
                                        class="${hideInputClass}"
                                        style="width:100%; padding:0.4rem; margin:0; border:1px solid var(--border); border-radius:4px; font-size:0.85rem; box-sizing: border-box;"
-                                       ${e.check || e.del ? 'disabled' : ''} ${disabledAttr}
-                                       onchange="window.updateCompReason('${e.dbKey}')">
+                                       ${chkStatus || delStatus ? 'disabled' : ''} ${disabledAttr}
+                                       onchange="window.updateCompReason('${e.id}')">
                             </div>
                         </td>
                     `;
-                    if(e.del) tr.style.opacity = '0.5';
+                    if(delStatus) tr.style.opacity = '0.5';
                     tbody.appendChild(tr);
                 });
             }
         }
-
-        window.approvePin = function(pin, name) {
-            pinsRef.child(pin).update({ approved: true })
-            .then(() => {
-                showToast(`✅ ${name}님의 접속이 정상적으로 승인되었습니다.`);
-            })
-            .catch((error) => {
-                showToast("❌ 승인 실패: " + error.message, true);
-            });
-        };
-
-        window.deletePin = function(pin, name) {
-            if(confirm(`[${name}] 직원의 PIN(${pin}) 등록 내역을 정말 삭제하시겠습니까?`)) {
-                pinsRef.child(pin).remove()
-                .then(() => {
-                    showToast(`✅ ${name}님의 PIN 내역이 삭제되었습니다.`);
-                })
-                .catch((error) => {
-                    showToast("❌ 삭제 실패: " + error.message, true);
-                });
-            }
-        };
 
         function checkAdmin() {
             if(document.getElementById('admin-pw').value === ADMIN_PW) {
@@ -1020,6 +929,26 @@
             } else {
                 showToast("⚠️ 비밀번호가 일치하지 않습니다.", true);
             }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const showBtn = document.getElementById('btn-show-sidebar');
+            
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                showBtn.classList.add('hidden');
+            } else {
+                sidebar.classList.add('hidden');
+                showBtn.classList.remove('hidden');
+            }
+        }
+
+        function toggleExpander() {
+            const exp = document.getElementById('search-expander');
+            const icon = document.getElementById('expander-icon');
+            exp.classList.toggle('open');
+            icon.innerText = exp.classList.contains('open') ? '▼' : '▶';
         }
 
         function togglePinList() {
@@ -1034,21 +963,13 @@
 
         function renderPinList() {
             const display = document.getElementById('pin-list-display');
-            const pinKeys = Object.keys(pins);
             
-            if (pinKeys.length === 0) {
+            if (pins.length === 0) {
                 display.innerHTML = '<p style="color: gray; text-align: center; margin: 0;">등록된 사용자가 없습니다.</p>';
                 return;
             }
 
-            const sortedPins = pinKeys.map(pin => {
-                const data = pins[pin];
-                if (typeof data === 'string') {
-                    return { pin: pin, name: data, approved: true };
-                } else {
-                    return { pin: pin, name: data.name, approved: data.approved };
-                }
-            }).sort((a, b) => a.name.localeCompare(b.name));
+            const sortedPins = [...pins].sort((a, b) => a.name.localeCompare(b.name));
             
             let html = `
                 <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #eee; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
@@ -1057,11 +978,12 @@
                 <ul style="list-style: none; padding: 0; margin: 0;">`;
                 
             sortedPins.forEach(item => {
-                let approveBtn = !item.approved ? 
+                const isApproved = item.approved === 1 || item.approved === true;
+                let approveBtn = !isApproved ? 
                     `<button onclick="window.approvePin('${item.pin}', '${item.name}')" style="width: auto; padding: 0.2rem 0.5rem; font-size: 0.8rem; background-color: var(--success); color: white; border: 1px solid var(--success); margin:0; margin-right:0.5rem;">✅ 승인</button>` : '';
                 
-                let statusText = !item.approved ? `<span style="color: #f59e0b; font-weight: bold;">(⏳대기중)</span>` : '';
-                let nameColor = item.approved ? 'var(--primary)' : 'gray';
+                let statusText = !isApproved ? `<span style="color: #f59e0b; font-weight: bold;">(⏳대기중)</span>` : '';
+                let nameColor = isApproved ? 'var(--primary)' : 'gray';
 
                 html += `<li style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0;">
                             <div>
@@ -1078,22 +1000,39 @@
             display.innerHTML = html;
         }
 
-        function clearData() {
-            if(confirm("🚨 경고: 모든 발주 내역이 초기화됩니다. 계속하시겠습니까?")) {
-                entriesRef.remove()
-                .then(() => {
-                    showToast("✅ 모든 발주 내역이 성공적으로 초기화되었습니다.");
-                });
-            }
-        }
+        window.approvePin = async function(pin, name) {
+            await fetch('/api?action=addPin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin: pin, name: name, approved: true })
+            });
+            showToast(`✅ ${name}님의 접속이 정상적으로 승인되었습니다.`);
+            loadAllData();
+        };
 
-        function clearPins() {
-            if(confirm("🚨 경고: 모든 직원의 PIN 등록 내역이 초기화됩니다.")) {
-                pinsRef.remove()
-                .then(() => {
-                    showToast("✅ 모든 직원들의 PIN 등록 내역이 초기화되었습니다.");
-                    logout();
+        window.deletePin = async function(pin, name) {
+            if(confirm(`[${name}] 직원의 PIN(${pin}) 등록 내역을 정말 삭제하시겠습니까?`)) {
+                await fetch('/api?action=deletePin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: pin })
                 });
+                showToast(`✅ ${name}님의 PIN 내역이 삭제되었습니다.`);
+                loadAllData();
+            }
+        };
+
+        async function clearData(action) {
+            let msg = action === 'clearAllEntries' ? "발주 내역" : "PIN 등록 내역";
+            if(confirm(`🚨 경고: 모든 ${msg}이 초기화됩니다. 계속하시겠습니까?`)) {
+                await fetch('/api?action=' + action, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                showToast(`✅ 모든 ${msg}이 성공적으로 초기화되었습니다.`);
+                if(action === 'clearAllPins') logout();
+                loadAllData();
             }
         }
 
@@ -1105,12 +1044,13 @@
             const centerFilter = document.getElementById('f-center').value;
 
             let filteredEntries = [...entries].reverse();
+            const isTrue = val => val === 1 || val === true || val === 'true';
 
-            if(filter === 'uncheck') filteredEntries = filteredEntries.filter(e => !e.del && !e.check && !e.recv);
-            else if(filter === 'check') filteredEntries = filteredEntries.filter(e => !e.del && e.check && !e.recv);
-            else if(filter === 'recv') filteredEntries = filteredEntries.filter(e => !e.del && e.recv);
-            else if(filter === 'all') filteredEntries = filteredEntries.filter(e => !e.del);
-            else if(filter === 'del') filteredEntries = filteredEntries.filter(e => e.del);
+            if(filter === 'uncheck') filteredEntries = filteredEntries.filter(e => !isTrue(e.del) && !isTrue(e.check_status) && !isTrue(e.recv));
+            else if(filter === 'check') filteredEntries = filteredEntries.filter(e => !isTrue(e.del) && isTrue(e.check_status) && !isTrue(e.recv));
+            else if(filter === 'recv') filteredEntries = filteredEntries.filter(e => !isTrue(e.del) && isTrue(e.recv));
+            else if(filter === 'all') filteredEntries = filteredEntries.filter(e => !isTrue(e.del));
+            else if(filter === 'del') filteredEntries = filteredEntries.filter(e => isTrue(e.del));
 
             if(centerFilter !== 'all') {
                 filteredEntries = filteredEntries.filter(e => e.center && e.center.includes(centerFilter));
@@ -1140,8 +1080,8 @@
                 const combinedReason = [currentSel, currentTxt].filter(Boolean).join(" / ") || '-';
 
                 return {
-                    "삭제상태": e.del ? "🗑️삭제됨" : "정상",
-                    "진행상태": e.check ? (e.recv ? "✅입고완료" : "✅답변완료") : "미체크",
+                    "삭제상태": isTrue(e.del) ? "🗑️삭제됨" : "정상",
+                    "진행상태": isTrue(e.check_status) ? (isTrue(e.recv) ? "✅입고완료" : "✅답변완료") : "미체크",
                     "매입처": e.supplierName || '-',
                     "제품코드": e.pCode || '-',
                     "제품명": e.pName || '-',
@@ -1199,36 +1139,86 @@
             }, 3000);
         }
 
-        function getCurrentDateTimeStr() {
-            const now = new Date();
-            return now.getFullYear() + "-" + 
-                   String(now.getMonth()+1).padStart(2,'0') + "-" + 
-                   String(now.getDate()).padStart(2,'0') + " " + 
-                   String(now.getHours()).padStart(2,'0') + ":" + 
-                   String(now.getMinutes()).padStart(2,'0');
-        }
+        // 클라우드플레어 D1용 엑셀 업로드 통신 로직
+        function uploadExcel(tableName, inputId) {
+            const fileInput = document.getElementById(inputId);
+            const btn = document.getElementById(inputId.replace('file', 'btn-upload'));
+            if (fileInput.files.length === 0) { showToast("⚠️ 엑셀 파일을 선택해주세요.", true); return; }
+            if (!confirm(`🚨 경고: 기존 데이터가 모두 지워지고 이 엑셀 파일 내용으로 덮어쓰기 됩니다. 계속하시겠습니까?`)) return;
 
-        async function uploadDataInChunks(refPath, dataArray, timePath) {
-            try {
-                await db.ref(refPath).remove();
-
-                const CHUNK_SIZE = 1000;
-                for (let i = 0; i < dataArray.length; i += CHUNK_SIZE) {
-                    const chunk = dataArray.slice(i, i + CHUNK_SIZE);
-                    const updates = {};
-                    chunk.forEach((item, index) => {
-                        updates[(i + index).toString()] = item;
-                    });
-                    await db.ref(refPath).update(updates);
-                }
-
-                const timeStr = getCurrentDateTimeStr();
-                await db.ref(timePath).set(timeStr);
-
-                showToast(`✅ 데이터 ${dataArray.length}건이 성공적으로 덮어쓰기 되었습니다!`);
-            } catch (err) {
-                showToast("❌ 업로드 중 오류 발생: " + err.message, true);
+            if(btn) {
+                btn.disabled = true;
+                btn.innerText = "⏳ 업로드 중...";
             }
+            showToast("⏳ 엑셀을 읽는 중입니다. 잠시만 기다려주세요...");
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
+
+                    let rows = [];
+                    jsonData.forEach(r => {
+                        if(tableName === 'products' && r['코드']) {
+                            rows.push({
+                                code: String(r['코드']).replace(/\.0$/, '').trim().padStart(6, '0'), 
+                                name: String(r['상품명'] || '').trim(), 
+                                spec: String(r['규격'] || '').trim(), 
+                                seller: getLastMatchingColumn(r, '판매원')
+                            });
+                        }
+                        if(tableName === 'vendors' && r['코드']) {
+                            rows.push({
+                                code: String(r['코드']).replace(/\.0$/, '').trim(), 
+                                name: String(r['매출처명'] || '').trim(), 
+                                region: String(r['지역'] || '').trim(), 
+                                address: String(r['주소'] || '').trim(), 
+                                center: String(r['센타구분'] || '').replace(/센터/g, '').trim()
+                            });
+                        }
+                        if(tableName === 'suppliers' && r['코드']) {
+                            rows.push({
+                                code: String(r['코드']).replace(/\.0$/, '').trim(), 
+                                name: getLastMatchingColumn(r, '매입처')
+                            });
+                        }
+                        if(tableName === 'managers' && r['주문코드']) {
+                            rows.push({
+                                code: String(r['주문코드']).replace(/\.0$/, '').trim(), 
+                                name: getLastMatchingColumn(r, '주문자')
+                            });
+                        }
+                    });
+
+                    // 중복 제거 (products 예시)
+                    if(tableName === 'products') {
+                        const uniqueMap = new Map();
+                        rows.forEach(r => uniqueMap.set(r.code, r));
+                        rows = Array.from(uniqueMap.values());
+                    }
+
+                    await fetch('/api?action=uploadMaster', {
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ table: tableName, rows: rows })
+                    });
+
+                    showToast(`✅ ${tableName} 업로드 완료!`);
+                    fileInput.value = ""; 
+                    loadAllData();
+                } catch(err) {
+                    showToast("❌ 업로드 처리 중 오류가 발생했습니다.", true);
+                } finally {
+                    if(btn) {
+                        btn.disabled = false;
+                        btn.innerText = "데이터 덮어쓰기";
+                    }
+                }
+            };
+            reader.readAsArrayBuffer(fileInput.files[0]);
         }
 
         function getLastMatchingColumn(row, keyword) {
@@ -1236,186 +1226,16 @@
             return key && row[key] != null ? String(row[key]).replace(/\.0$/, '').trim() : "";
         }
 
-        function uploadProductsExcel() {
-            const fileInput = document.getElementById('file-products');
-            const btn = document.getElementById('btn-upload-prod');
-            if (fileInput.files.length === 0) { showToast("⚠️ 상품색인부 엑셀 파일을 선택해주세요.", true); return; }
-            if (!confirm("🚨 경고: 기존 상품 데이터가 모두 지워지고 이 엑셀 파일 내용으로 덮어쓰기 됩니다. 계속하시겠습니까?")) return;
-
-            btn.disabled = true;
-            btn.innerText = "⏳ 업로드 중...";
-            showToast("⏳ 엑셀을 읽는 중입니다. 잠시만 기다려주세요...");
-
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
-
-                    const formattedData = jsonData.map(row => {
-                        let code = (row['코드'] != null) ? String(row['코드']).replace(/\.0$/, '').trim() : "";
-                        if (code !== "") code = code.padStart(6, '0');
-                        
-                        let sellerCode = getLastMatchingColumn(row, '판매원');
-
-                        return {
-                            '코드': code,
-                            '상품명': (row['상품명'] != null) ? String(row['상품명']).trim() : "",
-                            '규격': (row['규격'] != null) ? String(row['규격']).trim() : "",
-                            '판매원': sellerCode 
-                        };
-                    }).filter(row => row['코드'] !== ""); 
-
-                    await uploadDataInChunks('products', formattedData, 'metadata/upload_time/products');
-                    
-                    fileInput.value = ""; 
-                } catch(err) {
-                    showToast("❌ 엑셀 파일을 처리하는 중 오류가 발생했습니다.", true);
-                } finally {
-                    btn.disabled = false;
-                    btn.innerText = "상품 데이터 덮어쓰기";
-                }
-            };
-            reader.readAsArrayBuffer(fileInput.files[0]);
-        }
-
-        function uploadVendorsExcel() {
-            const fileInput = document.getElementById('file-vendors');
-            const btn = document.getElementById('btn-upload-vend');
-            if (fileInput.files.length === 0) { showToast("⚠️ 매출처색인부 엑셀 파일을 선택해주세요.", true); return; }
-            if (!confirm("🚨 경고: 기존 매출처 데이터가 모두 지워지고 이 엑셀 파일 내용으로 덮어쓰기 됩니다. 계속하시겠습니까?")) return;
-
-            btn.disabled = true;
-            btn.innerText = "⏳ 업로드 중...";
-            showToast("⏳ 엑셀을 읽는 중입니다. 잠시만 기다려주세요...");
-
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
-
-                    const formattedData = jsonData.map(row => {
-                        let code = (row['코드'] != null) ? String(row['코드']).replace(/\.0$/, '').trim() : "";
-                        
-                        // 🌟 신규: 센타구분 처리 추가
-                        let centerRaw = (row['센타구분'] != null) ? String(row['센타구분']) : "";
-                        let center = centerRaw.replace(/센터/g, '').trim();
-
-                        return {
-                            '코드': code,
-                            '지역': (row['지역'] != null) ? String(row['지역']).trim() : "",
-                            '매출처명': (row['매출처명'] != null) ? String(row['매출처명']).trim() : "",
-                            '주소': (row['주소'] != null) ? String(row['주소']).trim() : "",
-                            '센터': center // 🌟 신규
-                        };
-                    }).filter(row => row['코드'] !== "");
-
-                    await uploadDataInChunks('vendors', formattedData, 'metadata/upload_time/vendors');
-
-                    fileInput.value = ""; 
-                } catch(err) {
-                    showToast("❌ 엑셀 파일을 처리하는 중 오류가 발생했습니다.", true);
-                } finally {
-                    btn.disabled = false;
-                    btn.innerText = "매출처 데이터 덮어쓰기";
-                }
-            };
-            reader.readAsArrayBuffer(fileInput.files[0]);
-        }
-
-        function uploadSuppliersExcel() {
-            const fileInput = document.getElementById('file-suppliers');
-            const btn = document.getElementById('btn-upload-sup');
-            if (fileInput.files.length === 0) { showToast("⚠️ 매입처색인부 엑셀 파일을 선택해주세요.", true); return; }
-            if (!confirm("🚨 경고: 기존 매입처 데이터가 모두 지워지고 이 엑셀 파일 내용으로 덮어쓰기 됩니다. 계속하시겠습니까?")) return;
-
-            btn.disabled = true;
-            btn.innerText = "⏳ 업로드 중...";
-            showToast("⏳ 엑셀을 읽는 중입니다. 잠시만 기다려주세요...");
-
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
-
-                    const formattedData = jsonData.map(row => {
-                        let code = (row['코드'] != null) ? String(row['코드']).replace(/\.0$/, '').trim() : "";
-                        let name = getLastMatchingColumn(row, '매입처'); 
-                        return {
-                            '코드': code,
-                            '매입처명': name
-                        };
-                    }).filter(row => row['코드'] !== "");
-
-                    await uploadDataInChunks('tf_suppliers', formattedData, 'metadata/upload_time/tf_suppliers');
-
-                    fileInput.value = ""; 
-                } catch(err) {
-                    showToast("❌ 엑셀 파일을 처리하는 중 오류가 발생했습니다.", true);
-                } finally {
-                    btn.disabled = false;
-                    btn.innerText = "매입처 데이터 덮어쓰기";
-                }
-            };
-            reader.readAsArrayBuffer(fileInput.files[0]);
-        }
-
-        function uploadManagersExcel() {
-            const fileInput = document.getElementById('file-managers');
-            const btn = document.getElementById('btn-upload-man');
-            if (fileInput.files.length === 0) { showToast("⚠️ 제약사별담당자 엑셀 파일을 선택해주세요.", true); return; }
-            if (!confirm("🚨 경고: 기존 담당자 데이터가 모두 지워지고 이 엑셀 파일 내용으로 덮어쓰기 됩니다. 계속하시겠습니까?")) return;
-
-            btn.disabled = true;
-            btn.innerText = "⏳ 업로드 중...";
-            showToast("⏳ 엑셀을 읽는 중입니다. 잠시만 기다려주세요...");
-
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
-
-                    const formattedData = jsonData.map(row => {
-                        let code = getLastMatchingColumn(row, '주문코드'); 
-                        let name = getLastMatchingColumn(row, '주문자');
-                        return {
-                            '주문코드': code,
-                            '주문자': name
-                        };
-                    }).filter(row => row['주문코드'] !== "");
-
-                    await uploadDataInChunks('tf_managers', formattedData, 'metadata/upload_time/tf_managers');
-
-                    fileInput.value = ""; 
-                } catch(err) {
-                    showToast("❌ 엑셀 파일을 처리하는 중 오류가 발생했습니다.", true);
-                } finally {
-                    btn.disabled = false;
-                    btn.innerText = "담당자 데이터 덮어쓰기";
-                }
-            };
-            reader.readAsArrayBuffer(fileInput.files[0]);
-        }
-
         function setupAutocomplete(inputId, listId, dataArrayFunc, searchKeys, displayFunc, onSelect) {
             const input = document.getElementById(inputId);
             const list = document.getElementById(listId);
+            let currentFocus = -1;
 
             input.addEventListener('input', function() {
                 const val = this.value.trim().toLowerCase().replace(/\^/g, ' ');
                 const searchTerms = val.split(/\s+/).filter(t => t.length > 0);
                 list.innerHTML = '';
+                currentFocus = -1;
                 
                 if (searchTerms.length === 0) {
                     list.style.display = 'none';
@@ -1449,86 +1269,11 @@
             document.addEventListener('click', function(e) {
                 if (e.target !== input) list.style.display = 'none';
             });
-        }
 
-        setupAutocomplete(
-            'i-vend', 'i-vend-list', 
-            () => {
-                return vendorsData.filter(v => {
-                    const code = v.코드 ? v.코드.toString().toUpperCase() : "";
-                    const name = v.매출처명 ? v.매출처명.toString() : ""; 
-                    
-                    if (name.includes('(특별)')) {
-                        return false;
-                    }
-
-                    return code.startsWith('7') || code.startsWith('S') || code.startsWith('M');
-                });
-            }, 
-            ['매출처명', '지역', '주소', '코드', '센터'], // 검색 키워드에 센터 포함
-            (item) => {
-                // 🌟 신규: 드롭다운에 센터 이름 파란색 강력 표시 적용
-                let centerTag = item.센터 ? `<span style="color:#2e90e8 !important; font-weight:bold;">[${item.센터}]</span> ` : '';
-                return `<strong>${item.매출처명}</strong> <span class="text-small">${centerTag}${item.지역} | ${item.코드} | ${item.주소}</span>`;
-            },
-            (item) => {
-                document.getElementById('i-vend').value = `${item.코드} - ${item.매출처명}`; 
-            }
-        );
-
-        setupAutocomplete(
-            'i-prod', 'i-prod-list', 
-            () => productsData, 
-            ['상품명', '코드', '규격'],
-            (item) => {
-                let sName = "-";
-                let mName = "-";
-                let debugCode = "";
-                
-                if(item.판매원) {
-                    debugCode = formatCode3(item.판매원);
-                    
-                    const sup = suppliersData.find(s => formatCode3(s.코드) === debugCode);
-                    if(sup) {
-                        sName = cleanCompanyName(sup.매입처명);
-                    } else {
-                        sName = `미등록(코드:${debugCode})`; 
-                    }
-                    
-                    const mgr = managersData.find(m => formatCode3(m.주문코드) === debugCode);
-                    if(mgr) {
-                        mName = mgr.주문자;
-                    } else {
-                        mName = `미등록(코드:${debugCode})`; 
-                    }
-                }
-                
-                return `<div style="padding: 2px 0; line-height: 1.4;">
-                            <strong>${item.상품명}</strong> <span class="text-small">${item.코드} | ${item.규격}</span><br>
-                            <span style="font-size: 11px; color: #0066cc; font-weight:500;">🏢 ${sName} &nbsp;|&nbsp; 👨‍💼 ${mName}</span>
-                        </div>`;
-            },
-            (item) => {
-                document.getElementById('i-prod').value = `${item.코드} ${item.상품명}`;
-            }
-        );
-
-        function setupKeyboardNav(inputId, dropdownId, nextInputId) {
-            const input = document.getElementById(inputId);
-            let currentFocus = -1;
-
-            if (!input) return;
-
-            input.addEventListener("input", function() {
-                currentFocus = -1;
-            });
-
-            input.addEventListener("keydown", function(e) {
-                const dropdown = document.getElementById(dropdownId);
-                if (!dropdown) return;
-
-                let items = dropdown.getElementsByTagName("li");
-                if (items.length === 0) return;
+            // 방향키 조작 이벤트 (원래 코드 그대로 보존)
+            input.addEventListener('keydown', function(e) {
+                let items = list.getElementsByTagName('li');
+                if (!items || items.length === 0) return;
 
                 if (e.key === "ArrowDown") {
                     currentFocus++;
@@ -1537,16 +1282,9 @@
                     currentFocus--;
                     addActive(items);
                 } else if (e.key === "Enter") {
-                    e.preventDefault(); 
-                    if (currentFocus > -1) {
-                        if (items[currentFocus]) {
-                            items[currentFocus].click(); 
-                        }
-                    }
-                    if (nextInputId) {
-                        setTimeout(() => {
-                            document.getElementById(nextInputId).focus();
-                        }, 50);
+                    e.preventDefault();
+                    if (currentFocus > -1 && items[currentFocus]) {
+                        items[currentFocus].click();
                     }
                 }
             });
@@ -1568,8 +1306,44 @@
         }
 
         window.addEventListener('DOMContentLoaded', function() {
-            setupKeyboardNav("i-prod", "i-prod-list", "i-vend"); 
-            setupKeyboardNav("i-vend", "i-vend-list", "i-qty");  
+            setupAutocomplete(
+                'i-vend', 'i-vend-list', 
+                () => {
+                    return vendorsData.filter(v => {
+                        const code = v.code ? v.code.toString().toUpperCase() : "";
+                        const name = v.name ? v.name.toString() : ""; 
+                        if (name.includes('(특별)')) return false;
+                        return code.startsWith('7') || code.startsWith('S') || code.startsWith('M');
+                    });
+                }, 
+                ['name', 'region', 'address', 'code', 'center'], 
+                (item) => {
+                    let centerTag = item.center ? `<span style="color:#2e90e8 !important; font-weight:bold;">[${item.center}]</span> ` : '';
+                    return `<strong>${item.name}</strong> <span class="text-small">${centerTag}${item.region} | ${item.code} | ${item.address}</span>`;
+                },
+                (item) => { document.getElementById('i-vend').value = `${item.code} - ${item.name}`; }
+            );
+
+            setupAutocomplete(
+                'i-prod', 'i-prod-list', 
+                () => productsData, 
+                ['name', 'code', 'spec'],
+                (item) => {
+                    let sName = "-", mName = "-", debugCode = "";
+                    if(item.seller) {
+                        debugCode = formatCode3(item.seller);
+                        const sup = suppliersData.find(s => formatCode3(s.code) === debugCode);
+                        sName = sup ? cleanCompanyName(sup.name) : `미등록(코드:${debugCode})`; 
+                        const mgr = managersData.find(m => formatCode3(m.code) === debugCode);
+                        mName = mgr ? mgr.name : `미등록(코드:${debugCode})`; 
+                    }
+                    return `<div style="padding: 2px 0; line-height: 1.4;">
+                                <strong>${item.name}</strong> <span class="text-small">${item.code} | ${item.spec}</span><br>
+                                <span style="font-size: 11px; color: #0066cc; font-weight:500;">🏢 ${sName} &nbsp;|&nbsp; 👨‍💼 ${mName}</span>
+                            </div>`;
+                },
+                (item) => { document.getElementById('i-prod').value = `${item.code} ${item.name}`; }
+            );
         });
 
     </script>
