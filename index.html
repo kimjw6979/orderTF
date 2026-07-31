@@ -239,7 +239,7 @@
         table { 
             width: 100%; 
             border-collapse: collapse; 
-            margin-top: 1rem; 
+            margin-bottom: 1rem; 
             font-size: 0.95rem; 
         }
         th, td { 
@@ -334,6 +334,7 @@
             align-items: center; 
             gap: 1rem; 
             margin-top: 2rem; 
+            margin-bottom: 2rem;
         }
         .pagination button { 
             width: auto; 
@@ -423,7 +424,7 @@
 
     <!-- 스플래시 화면 -->
     <div id="splash-screen">
-        <img src="logo.png" alt="티제이팜 주문요청 게시판입니다!">
+        <img src="logo.png" alt="티제이팜 주문요청 게시판입니다!" onerror="this.style.display='none';">
     </div>
 
     <!-- 사이드바 열기 버튼 -->
@@ -453,6 +454,7 @@
             <div class="upload-card">
                 <div class="upload-card-header">
                     <span class="upload-title">📦 상품색인부</span>
+                    <span id="date-products" style="color: var(--primary); font-size: 0.85rem; font-weight: 600;"></span>
                 </div>
                 <input type="file" id="file-products" accept=".xlsx, .xls" class="file-input">
                 <button class="secondary btn-upload" onclick="uploadExcel('products', 'file-products')" id="btn-upload-prod">상품 데이터 덮어쓰기</button>
@@ -462,6 +464,7 @@
             <div class="upload-card">
                 <div class="upload-card-header">
                     <span class="upload-title">🏢 매입처색인부</span>
+                    <span id="date-suppliers" style="color: var(--primary); font-size: 0.85rem; font-weight: 600;"></span>
                 </div>
                 <input type="file" id="file-suppliers" accept=".xlsx, .xls" class="file-input">
                 <button class="secondary btn-upload" onclick="uploadExcel('suppliers', 'file-suppliers')" id="btn-upload-sup">매입처 데이터 덮어쓰기</button>
@@ -471,6 +474,7 @@
             <div class="upload-card">
                 <div class="upload-card-header">
                     <span class="upload-title">👨‍💼 제약사별담당자</span>
+                    <span id="date-managers" style="color: var(--primary); font-size: 0.85rem; font-weight: 600;"></span>
                 </div>
                 <input type="file" id="file-managers" accept=".xlsx, .xls" class="file-input">
                 <button class="secondary btn-upload" onclick="uploadExcel('managers', 'file-managers')" id="btn-upload-man">담당자 데이터 덮어쓰기</button>
@@ -480,6 +484,7 @@
             <div class="upload-card">
                 <div class="upload-card-header">
                     <span class="upload-title">🏪 매출처색인부</span>
+                    <span id="date-vendors" style="color: var(--primary); font-size: 0.85rem; font-weight: 600;"></span>
                 </div>
                 <input type="file" id="file-vendors" accept=".xlsx, .xls" class="file-input">
                 <button class="secondary btn-upload" onclick="uploadExcel('vendors', 'file-vendors')" id="btn-upload-vend">매출처 데이터 덮어쓰기</button>
@@ -700,7 +705,18 @@
         // SQLite Boolean 판별 헬퍼 함수
         const isTrue = (val) => val === 1 || val === true || val === 'true';
 
-        // 스플래시 화면 숨기기
+        // 스플래시 화면 숨기기 및 로컬 날짜 세팅
+        window.addEventListener('DOMContentLoaded', () => {
+            // 업로드 일시 로컬 캐시 적용
+            ['products', 'suppliers', 'managers', 'vendors'].forEach(table => {
+                const savedDate = localStorage.getItem('upload_date_' + table);
+                if (savedDate) {
+                    const el = document.getElementById('date-' + table);
+                    if (el) el.innerText = savedDate;
+                }
+            });
+        });
+
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const splash = document.getElementById('splash-screen');
@@ -1507,7 +1523,7 @@
             }, 3000);
         }
 
-        // 클라우드플레어 D1용 엑셀 업로드 통신 로직
+        // 클라우드플레어 D1용 엑셀 업로드 (다양한 컬럼명에 대응하도록 추출 로직 강화)
         function uploadExcel(tableName, inputId) {
             const fileInput = document.getElementById(inputId);
             const btn = document.getElementById(inputId.replace('file', 'btn-upload'));
@@ -1536,34 +1552,50 @@
 
                     let rows = [];
                     jsonData.forEach(r => {
-                        if (tableName === 'products' && r['코드']) {
-                            rows.push({
-                                code: String(r['코드']).replace(/\.0$/, '').trim().padStart(6, '0'), 
-                                name: String(r['상품명'] || '').trim(), 
-                                spec: String(r['규격'] || '').trim(), 
-                                seller: getLastMatchingColumn(r, '판매원')
-                            });
+                        // 1. 상품색인부 - 엑셀에 '코드', '상품코드', '제품코드' 어떤 이름이든 인식
+                        if (tableName === 'products') {
+                            const code = r['코드'] || r['상품코드'] || r['제품코드'];
+                            if (code) {
+                                rows.push({
+                                    code: String(code).replace(/\.0$/, '').trim().padStart(6, '0'), 
+                                    name: String(r['상품명'] || r['제품명'] || r['품명'] || '').trim(), 
+                                    spec: String(r['규격'] || '').trim(), 
+                                    seller: getLastMatchingColumn(r, '판매원') || getLastMatchingColumn(r, '제약사') || getLastMatchingColumn(r, '제조원')
+                                });
+                            }
                         }
-                        if (tableName === 'vendors' && r['코드']) {
-                            rows.push({
-                                code: String(r['코드']).replace(/\.0$/, '').trim(), 
-                                name: String(r['매출처명'] || '').trim(), 
-                                region: String(r['지역'] || '').trim(), 
-                                address: String(r['주소'] || '').trim(), 
-                                center: String(r['센타구분'] || '').replace(/센터/g, '').trim()
-                            });
+                        // 2. 매출처색인부 - 거래처/매출처 처리
+                        if (tableName === 'vendors') {
+                            const code = r['코드'] || r['매출처코드'] || r['거래처코드'];
+                            if (code) {
+                                rows.push({
+                                    code: String(code).replace(/\.0$/, '').trim(), 
+                                    name: String(r['매출처명'] || r['거래처명'] || r['상호'] || '').trim(), 
+                                    region: String(r['지역'] || '').trim(), 
+                                    address: String(r['주소'] || '').trim(), 
+                                    center: String(r['센타구분'] || r['센터'] || '').replace(/센터/g, '').trim()
+                                });
+                            }
                         }
-                        if (tableName === 'suppliers' && r['코드']) {
-                            rows.push({
-                                code: String(r['코드']).replace(/\.0$/, '').trim(), 
-                                name: getLastMatchingColumn(r, '매입처')
-                            });
+                        // 3. 매입처색인부 - 거래처 처리
+                        if (tableName === 'suppliers') {
+                            const code = r['코드'] || r['매입처코드'] || r['거래처코드'];
+                            if (code) {
+                                rows.push({
+                                    code: String(code).replace(/\.0$/, '').trim(), 
+                                    name: getLastMatchingColumn(r, '매입처') || getLastMatchingColumn(r, '거래처명') || getLastMatchingColumn(r, '상호')
+                                });
+                            }
                         }
-                        if (tableName === 'managers' && r['주문코드']) {
-                            rows.push({
-                                code: String(r['주문코드']).replace(/\.0$/, '').trim(), 
-                                name: getLastMatchingColumn(r, '주문자')
-                            });
+                        // 4. 담당자 테이블 - (담당자 누락 방지: 컬럼명 유연화)
+                        if (tableName === 'managers') {
+                            const code = r['주문코드'] || r['코드'] || r['매입처코드'] || r['제약사코드'];
+                            if (code) {
+                                rows.push({
+                                    code: String(code).replace(/\.0$/, '').trim(), 
+                                    name: getLastMatchingColumn(r, '주문자') || getLastMatchingColumn(r, '담당자') || getLastMatchingColumn(r, '사원명')
+                                });
+                            }
                         }
                     });
 
@@ -1583,6 +1615,18 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ table: tableName, rows: rows })
                     });
+
+                    // 🌟 정상적으로 업로드 완료 후 로컬에 현재 시간 저장 및 UI 갱신 
+                    const now = new Date();
+                    const dateStr = now.getFullYear() + "-" + 
+                                   String(now.getMonth()+1).padStart(2,'0') + "-" + 
+                                   String(now.getDate()).padStart(2,'0') + " " + 
+                                   String(now.getHours()).padStart(2,'0') + ":" + 
+                                   String(now.getMinutes()).padStart(2,'0');
+                                   
+                    localStorage.setItem('upload_date_' + tableName, dateStr);
+                    const dateSpan = document.getElementById('date-' + tableName);
+                    if (dateSpan) dateSpan.innerText = dateStr;
 
                     showToast(`✅ ${tableName} 업로드 완료!`);
                     fileInput.value = ""; 
@@ -1628,7 +1672,8 @@
                 
                 const matches = currentData.filter(item => {
                     if (!item) return false;
-                    const combinedStr = searchKeys.map(key => item[key] || '').join(' ').toLowerCase();
+                    // 검색 속성 강제 문자열 치환하여 검색 오류 방지
+                    const combinedStr = searchKeys.map(key => String(item[key] || '')).join(' ').toLowerCase();
                     return searchTerms.every(term => combinedStr.includes(term));
                 }).slice(0, 50);
 
