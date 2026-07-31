@@ -766,6 +766,7 @@
             }
         }
 
+        // 🌟 업데이트 로직 보완 (check_status 동기화 적용 완료)
         async function updateEntryInDB(id, updates) {
             try {
                 await fetch('/api?action=updateEntry', {
@@ -777,7 +778,12 @@
                 // 화면 즉시 갱신을 위한 로컬 데이터 수정
                 const entryIndex = entries.findIndex(e => e.id === id);
                 if (entryIndex > -1) {
-                    entries[entryIndex] = { ...entries[entryIndex], ...updates };
+                    const localUpdates = { ...updates };
+                    // 화면 렌더링에 사용되는 check_status 변수를 맞춤 동기화
+                    if (localUpdates.check !== undefined) {
+                        localUpdates.check_status = localUpdates.check ? 1 : 0;
+                    }
+                    entries[entryIndex] = { ...entries[entryIndex], ...localUpdates };
                 }
                 renderTable();
             } catch (e) {
