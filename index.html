@@ -705,18 +705,7 @@
         // SQLite Boolean 판별 헬퍼 함수
         const isTrue = (val) => val === 1 || val === true || val === 'true';
 
-        // 스플래시 화면 숨기기 및 로컬 날짜 세팅
-        window.addEventListener('DOMContentLoaded', () => {
-            // 업로드 일시 로컬 캐시 적용
-            ['products', 'suppliers', 'managers', 'vendors'].forEach(table => {
-                const savedDate = localStorage.getItem('upload_date_' + table);
-                if (savedDate) {
-                    const el = document.getElementById('date-' + table);
-                    if (el) el.innerText = savedDate;
-                }
-            });
-        });
-
+        // 스플래시 화면 숨기기
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const splash = document.getElementById('splash-screen');
@@ -745,6 +734,15 @@
                 pins = data.pins || [];
                 entries = data.entries || [];
                 
+                // 🌟 백엔드에서 전달받은 D1 DB 기반 업로드 날짜 동기화
+                const uploadDates = data.uploadDates || {};
+                ['products', 'suppliers', 'managers', 'vendors'].forEach(table => {
+                    const dateSpan = document.getElementById('date-' + table);
+                    if (dateSpan) {
+                        dateSpan.innerText = uploadDates[table] ? uploadDates[table] : "";
+                    }
+                });
+
                 if (!document.getElementById('app-section').classList.contains('hidden')) {
                     renderTable();
                     showToast("🔄 최신 데이터를 불러왔습니다.");
@@ -1523,7 +1521,7 @@
             }, 3000);
         }
 
-        // 클라우드플레어 D1용 엑셀 업로드 (다양한 컬럼명에 대응하도록 추출 로직 강화)
+        // 클라우드플레어 D1용 엑셀 업로드 (업데이트 날짜 DB 저장 방식 적용)
         function uploadExcel(tableName, inputId) {
             const fileInput = document.getElementById(inputId);
             const btn = document.getElementById(inputId.replace('file', 'btn-upload'));
@@ -1552,7 +1550,6 @@
 
                     let rows = [];
                     jsonData.forEach(r => {
-                        // 1. 상품색인부 - 엑셀에 '코드', '상품코드', '제품코드' 어떤 이름이든 인식
                         if (tableName === 'products') {
                             const code = r['코드'] || r['상품코드'] || r['제품코드'];
                             if (code) {
@@ -1564,7 +1561,6 @@
                                 });
                             }
                         }
-                        // 2. 매출처색인부 - 거래처/매출처 처리
                         if (tableName === 'vendors') {
                             const code = r['코드'] || r['매출처코드'] || r['거래처코드'];
                             if (code) {
@@ -1577,7 +1573,6 @@
                                 });
                             }
                         }
-                        // 3. 매입처색인부 - 거래처 처리
                         if (tableName === 'suppliers') {
                             const code = r['코드'] || r['매입처코드'] || r['거래처코드'];
                             if (code) {
@@ -1587,7 +1582,6 @@
                                 });
                             }
                         }
-                        // 4. 담당자 테이블 - (담당자 누락 방지: 컬럼명 유연화)
                         if (tableName === 'managers') {
                             const code = r['주문코드'] || r['코드'] || r['매입처코드'] || r['제약사코드'];
                             if (code) {
@@ -1599,7 +1593,6 @@
                         }
                     });
 
-                    // 중복 제거 (products 예시)
                     if (tableName === 'products') {
                         const uniqueMap = new Map();
                         rows.forEach(r => {
@@ -1610,29 +1603,28 @@
                         rows = Array.from(uniqueMap.values());
                     }
 
-                    await fetch('/api?action=uploadMaster', {
-                        method: 'POST', 
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ table: tableName, rows: rows })
-                    });
-
-                    // 🌟 정상적으로 업로드 완료 후 로컬에 현재 시간 저장 및 UI 갱신 
+                    // 🌟 현재 날짜 생성
                     const now = new Date();
                     const dateStr = now.getFullYear() + "-" + 
                                    String(now.getMonth()+1).padStart(2,'0') + "-" + 
                                    String(now.getDate()).padStart(2,'0') + " " + 
                                    String(now.getHours()).padStart(2,'0') + ":" + 
                                    String(now.getMinutes()).padStart(2,'0');
-                                   
-                    localStorage.setItem('upload_date_' + tableName, dateStr);
-                    const dateSpan = document.getElementById('date-' + tableName);
-                    if (dateSpan) dateSpan.innerText = dateStr;
+
+                    // 🌟 서버로 데이터 리스트와 함께 업로드 날짜(uploadDate) 동시 전송
+                    await fetch('/api?action=uploadMaster', {
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ table: tableName, rows: rows, uploadDate: dateStr })
+                    });
 
                     showToast(`✅ ${tableName} 업로드 완료!`);
                     fileInput.value = ""; 
+                    
+                    // 성공적으로 전송 완료 후 DB에서 최신 날짜를 받아오기 위해 새로고침 동작
                     loadAllData();
                 } catch(err) {
-                    showToast("❌ 업로드 처리 중 오류가 발생했습니다.", true);
+                    showToast("❌ 서버 통신 에러가 발생했습니다.", true);
                 } finally {
                     if (btn) {
                         btn.disabled = false;
@@ -1672,7 +1664,6 @@
                 
                 const matches = currentData.filter(item => {
                     if (!item) return false;
-                    // 검색 속성 강제 문자열 치환하여 검색 오류 방지
                     const combinedStr = searchKeys.map(key => String(item[key] || '')).join(' ').toLowerCase();
                     return searchTerms.every(term => combinedStr.includes(term));
                 }).slice(0, 50);
