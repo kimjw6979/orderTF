@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💊티제이팜 발주TF</title>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <title>💊티제이팜 발주TF (Cloudflare)</title>
     
-    <!-- 엑셀 전용 무료 번역기 (SheetJS) -->
+    <!-- 엑셀 전용 무료 라이브러리 (SheetJS) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
@@ -33,69 +30,98 @@
             overflow-x: hidden;
         }
 
-        /* 🌟 스플래시(대문) 화면 디자인 🌟 */
+        /* 스플래시 화면 */
         #splash-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: #fcefd6; display: flex; justify-content: center; align-items: center;
-            z-index: 9999; transition: opacity 0.8s ease;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fcefd6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease;
         }
-        #splash-screen img { max-width: 90%; max-height: 90vh; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        #splash-screen img {
+            max-width: 90%;
+            max-height: 90vh;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
 
         /* Layout */
         .sidebar { 
-            width: 340px; background-color: var(--sec-bg); padding: 2rem 1.5rem; 
-            border-right: 1px solid var(--border); box-sizing: border-box;
-            display: flex; flex-direction: column; gap: 1.5rem; transition: transform 0.3s ease;
+            width: 320px; 
+            background-color: var(--sec-bg); 
+            padding: 2rem 1.5rem; 
+            border-right: 1px solid var(--border); 
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            transition: transform 0.3s ease;
         }
         .main { 
-            flex-grow: 1; padding: 3rem 4rem; background: var(--bg); box-sizing: border-box; 
-            overflow-y: auto; border-top-left-radius: 12px; box-shadow: -4px 0 15px rgba(0,0,0,0.03);
+            flex-grow: 1; 
+            padding: 3rem 4rem; 
+            background: var(--bg); 
+            box-sizing: border-box; 
+            overflow-y: auto;
+            border-top-left-radius: 12px;
+            box-shadow: -4px 0 15px rgba(0,0,0,0.03);
             transition: width 0.3s ease;
         }
         
         /* Typography */
-        h1 { font-size: 2.2rem; font-weight: 700; margin-top: 0; padding-bottom: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        h1 { font-size: 2.2rem; font-weight: 700; margin-top: 0; padding-bottom: 1rem; border-bottom: 1px solid var(--border); display:flex; justify-content: space-between; align-items:center; }
         h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
         h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; }
         p { margin: 0 0 1rem 0; line-height: 1.5; color: var(--text-light); }
         
         /* Form Elements */
         input, select { 
-            width: 100%; padding: 0.75rem 1rem; margin-bottom: 1rem; 
-            border: 1px solid var(--border); border-radius: 0.5rem; box-sizing: border-box; 
-            font-size: 1rem; background-color: var(--bg); transition: border-color 0.2s;
+            width: 100%; 
+            padding: 0.75rem 1rem; 
+            margin-bottom: 1rem; 
+            border: 1px solid var(--border); 
+            border-radius: 0.5rem; 
+            box-sizing: border-box; 
+            font-size: 1rem; 
+            background-color: var(--bg);
+            transition: border-color 0.2s;
         }
+        input[type="file"] { padding: 0.5rem; font-size: 0.85rem; margin-bottom: 0.5rem; }
         input:focus, select:focus { outline: none; border-color: var(--primary); }
         
         button { 
-            width: 100%; padding: 0.75rem 1rem; background-color: var(--primary); color: white; 
-            border: 1px solid var(--primary); border-radius: 0.5rem; cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s;
+            width: 100%;
+            padding: 0.75rem 1rem; 
+            background-color: var(--primary); 
+            color: white; 
+            border: 1px solid var(--primary); 
+            border-radius: 0.5rem; 
+            cursor: pointer; 
+            font-size: 1rem;
+            font-weight: 600; 
+            transition: all 0.2s;
         }
         button:hover { background-color: var(--primary-hover); border-color: var(--primary-hover); }
         button:disabled { background-color: var(--border); cursor: not-allowed; }
         button.secondary { background-color: var(--bg); color: var(--text); border-color: var(--border); }
         button.secondary:hover { background-color: var(--sec-bg); color: var(--primary); border-color: var(--primary); }
         
-        /* 🌟 업로드 카드 UI 디자인 (요청하신 부분) 🌟 */
-        .upload-card { 
-            background: #ffffff; border: 1px solid var(--border); border-radius: 8px; 
-            padding: 1.2rem 1rem; margin-bottom: 1.2rem; box-shadow: 0 2px 5px rgba(0,0,0,0.02); 
-        }
-        .upload-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
-        .upload-title { font-size: 0.95rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 0.3rem;}
-        .upload-time { font-size: 0.8rem; color: var(--primary); font-weight: 500; }
-        .file-input { 
-            border: 1px solid var(--border); border-radius: 4px; padding: 0.4rem; 
-            font-size: 0.8rem; width: 100%; box-sizing: border-box; margin-bottom: 0.8rem; 
-            background-color: #fff; cursor: pointer; color: var(--text-light);
-        }
-        .btn-upload { padding: 0.6rem; font-size: 0.9rem; margin-bottom: 0; }
-
         /* Metrics */
         .metrics { display: flex; gap: 1rem; margin: 2rem 0; }
         .metric-card { 
-            background: var(--bg); padding: 1.5rem; border-radius: 0.75rem; flex: 1; 
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05); border: 1px solid var(--border); text-align: center;
+            background: var(--bg); 
+            padding: 1.5rem; 
+            border-radius: 0.75rem; 
+            flex: 1; 
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05); 
+            border: 1px solid var(--border);
+            text-align: center;
         }
         .metric-title { font-size: 1rem; color: var(--text-light); margin-bottom: 0.5rem; font-weight: 500;}
         .metric-value { font-size: 2.2rem; font-weight: 700; color: var(--text); }
@@ -152,27 +178,36 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 0; margin: 0; list-style: none;
             border-radius: 4px;
         }
-        .autocomplete-list li { padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; text-align: left; }
+        .autocomplete-list li {
+            padding: 10px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 14px; text-align: left;
+        }
         .autocomplete-list li:hover, .autocomplete-active { background-color: #e6f2ff !important; color: #000; }
         .text-small { color: #888; font-size: 12px; margin-left: 8px; }
 
+        /* 모바일 반응형 디자인 */
         @media (max-width: 768px) {
             .main { padding: 1.5rem 1rem; }
-            h1 { font-size: 1.5rem; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+            h1 { font-size: 1.5rem; flex-direction: column; align-items: flex-start; gap: 0.5rem;}
             .metrics { flex-direction: column; gap: 1rem; }
-            .form-row, .search-grid { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .search-grid { grid-template-columns: 1fr; }
             .filter-bar { flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .filter-bar > div { width: 100%; display: flex; flex-direction: column; gap: 0.5rem; }
+            .filter-bar select, .filter-bar button { width: 100% !important; margin: 0 !important; }
+            th, td { white-space: nowrap; padding: 0.8rem 0.5rem; font-size: 0.85rem; }
             .sidebar { width: 100%; position: absolute; z-index: 2000; height: 100%; overflow-y: auto;}
         }
     </style>
 </head>
 <body>
 
+    <!-- 스플래시 화면 -->
     <div id="splash-screen">
         <img src="logo.png" alt="티제이팜 주문요청 게시판입니다!">
     </div>
 
-    <button id="btn-show-sidebar" onclick="toggleSidebar()" style="position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; border-radius: 50%; background: var(--text); color: white; border: none; font-size: 1.5rem; cursor: pointer; z-index: 1000; text-align: center; line-height: 50px; padding: 0;" title="관리자 메뉴 열기">⚙️</button>
+    <!-- 사이드바 열기 버튼 -->
+    <button id="btn-show-sidebar" onclick="toggleSidebar()" style="position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; border-radius: 50%; background: var(--text); color: white; border: none; font-size: 1.5rem; cursor: pointer; z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.2); text-align: center; line-height: 50px; padding: 0;" title="관리자 메뉴 열기">⚙️</button>
 
     <div class="sidebar hidden" id="sidebar">
         <div>
@@ -190,47 +225,31 @@
                 <p style="color:#077e2b;">✅ 관리자 인증 성공</p>
             </div>
             
-            <h3 style="font-size: 1.1rem; margin-top: 2rem; display: flex; align-items: center; gap: 0.4rem;">📚 기초 데이터 엑셀 업로드</h3>
-            <p style="font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-bottom: 1rem;">※ 업로드 시 기존 데이터는 덮어쓰기 됩니다.</p>
+            <h3 style="font-size: 1rem; margin-top: 2rem;">📤 기초 데이터 엑셀 업로드</h3>
+            <p style="font-size: 0.8rem; color: #ff3333; font-weight: bold;">※ 업로드 시 기존 데이터는 덮어쓰기 됩니다.</p>
             
-            <!-- 상품색인부 카드 -->
-            <div class="upload-card">
-                <div class="upload-card-header">
-                    <span class="upload-title">📦 상품색인부</span>
-                    <span id="time-products" class="upload-time">기록 없음</span>
-                </div>
-                <input type="file" id="file-products" accept=".xlsx, .xls" class="file-input">
-                <button class="secondary btn-upload" onclick="uploadProductsExcel()" id="btn-upload-prod">상품 데이터 덮어쓰기</button>
+            <div style="background: white; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem;">
+                <label style="font-size: 0.9rem; font-weight: bold; margin-bottom:0.5rem; display:block;">📦 상품색인부</label>
+                <input type="file" id="file-products" accept=".xlsx, .xls">
+                <button class="secondary" style="padding: 0.5rem;" onclick="uploadExcel('products', 'file-products')">상품 데이터 덮어쓰기</button>
             </div>
 
-            <!-- 매입처색인부 카드 -->
-            <div class="upload-card">
-                <div class="upload-card-header">
-                    <span class="upload-title">🏢 매입처색인부</span>
-                    <span id="time-suppliers" class="upload-time">기록 없음</span>
-                </div>
-                <input type="file" id="file-suppliers" accept=".xlsx, .xls" class="file-input">
-                <button class="secondary btn-upload" onclick="uploadSuppliersExcel()" id="btn-upload-sup">매입처 데이터 덮어쓰기</button>
+            <div style="background: white; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem;">
+                <label style="font-size: 0.9rem; font-weight: bold; margin-bottom:0.5rem; display:block;">🏢 매입처색인부</label>
+                <input type="file" id="file-suppliers" accept=".xlsx, .xls">
+                <button class="secondary" style="padding: 0.5rem;" onclick="uploadExcel('suppliers', 'file-suppliers')">매입처 데이터 덮어쓰기</button>
             </div>
 
-            <!-- 제약사별담당자 카드 -->
-            <div class="upload-card">
-                <div class="upload-card-header">
-                    <span class="upload-title">👨‍💼 제약사별담당자</span>
-                    <span id="time-managers" class="upload-time">기록 없음</span>
-                </div>
-                <input type="file" id="file-managers" accept=".xlsx, .xls" class="file-input">
-                <button class="secondary btn-upload" onclick="uploadManagersExcel()" id="btn-upload-man">담당자 데이터 덮어쓰기</button>
+            <div style="background: white; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem;">
+                <label style="font-size: 0.9rem; font-weight: bold; margin-bottom:0.5rem; display:block;">👨‍💼 제약사별담당자</label>
+                <input type="file" id="file-managers" accept=".xlsx, .xls">
+                <button class="secondary" style="padding: 0.5rem;" onclick="uploadExcel('managers', 'file-managers')">담당자 데이터 덮어쓰기</button>
             </div>
 
-            <!-- 매출처색인부 카드 -->
-            <div class="upload-card">
-                <div class="upload-card-header">
-                    <span class="upload-title">🏪 매출처색인부</span>
-                    <span id="time-vendors" class="upload-time">기록 없음</span>
-                </div>
-                <input type="file" id="file-vendors" accept=".xlsx, .xls" class="file-input">
-                <button class="secondary btn-upload" onclick="uploadVendorsExcel()" id="btn-upload-vend">매출처 데이터 덮어쓰기</button>
+            <div style="background: white; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem;">
+                <label style="font-size: 0.9rem; font-weight: bold; margin-bottom:0.5rem; display:block;">🏪 매출처색인부</label>
+                <input type="file" id="file-vendors" accept=".xlsx, .xls">
+                <button class="secondary" style="padding: 0.5rem;" onclick="uploadExcel('vendors', 'file-vendors')">매출처 데이터 덮어쓰기</button>
             </div>
             
             <hr style="border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0;">
@@ -243,15 +262,16 @@
             </div>
             
             <h3 style="font-size: 1rem; margin-top: 2rem;">🚨 시스템 초기화</h3>
-            <button style="background-color: var(--text); border-color: var(--text); margin-bottom: 0.5rem;" onclick="clearData()">🗑️ 발주 내역 전체 초기화</button>
-            <button style="background-color: var(--text); border-color: var(--text); margin-bottom: 0.5rem;" onclick="clearPins()">🔄 PIN 등록 내역 전체 초기화</button>
+            <p style="font-size: 0.8rem;">테스트 종료 시 초기화 (데이터 복구 불가)</p>
+            <button style="background-color: var(--text); border-color: var(--text); margin-bottom: 0.5rem;" onclick="clearData('clearAllEntries')">🗑️ 발주 내역 전체 초기화</button>
+            <button style="background-color: var(--text); border-color: var(--text); margin-bottom: 0.5rem;" onclick="clearData('clearAllPins')">🔄 PIN 등록 내역 전체 초기화</button>
         </div>
     </div>
 
     <div class="main">
         <h1>
-            <span>📋 티제이팜 주문요청 게시판 <span style="font-size: 1rem; font-weight: normal; color: #2e90e8;">(트래픽 최적화 🟢)</span></span>
-            <button onclick="loadAllDataOnce()" class="secondary" style="width:auto; padding:0.4rem 1rem; font-size:0.9rem;">🔄 새로고침</button>
+            <span>📋 티제이팜 주문요청 게시판 <span style="font-size: 1rem; font-weight: normal; color: #2e90e8;">(Cloudflare D1 연결 🟢)</span></span>
+            <button onclick="loadAllData()" class="secondary" style="width:auto; padding:0.4rem 1rem; font-size:0.9rem;">🔄 데이터 새로고침</button>
         </h1>
         
         <!-- Login Section -->
@@ -279,10 +299,22 @@
             
             <!-- Metrics -->
             <div class="metrics">
-                <div class="metric-card"><div class="metric-title">📌 전체 등록</div><div class="metric-value" id="m-total">0건</div></div>
-                <div class="metric-card"><div class="metric-title">⏳ 미체크(요청)</div><div class="metric-value" id="m-unchecked" style="color: #f59e0b;">0건</div></div>
-                <div class="metric-card"><div class="metric-title">✅ 답변완료</div><div class="metric-value" id="m-checked" style="color: var(--success);">0건</div></div>
-                <div class="metric-card"><div class="metric-title">📦 입고완료</div><div class="metric-value" id="m-recv" style="color: #007bff;">0건</div></div>
+                <div class="metric-card">
+                    <div class="metric-title">📌 전체 등록</div>
+                    <div class="metric-value" id="m-total">0건</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">⏳ 미체크(요청)</div>
+                    <div class="metric-value" id="m-unchecked" style="color: #f59e0b;">0건</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">✅ 답변완료</div>
+                    <div class="metric-value" id="m-checked" style="color: var(--success);">0건</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">📦 입고완료</div>
+                    <div class="metric-value" id="m-recv" style="color: #007bff;">0건</div>
+                </div>
             </div>
 
             <!-- Input Form -->
@@ -391,7 +423,7 @@
                     데이터를 불러오는 중이거나 등록된 내역이 없습니다.
                 </div>
             </div>
-            <p style="font-size: 0.85rem; margin-top: 1rem;">💡 데이터를 새로 확인하려면 상단의 <b>[🔄 새로고침]</b> 버튼을 누르세요. <b>지정된 담당자</b>만 확인(답변 및 입고) 처리가 가능합니다.</p>
+            <p style="font-size: 0.85rem; margin-top: 1rem;">💡 데이터를 새로 확인하려면 상단의 <b>[🔄 데이터 새로고침]</b> 버튼을 누르세요. <b>지정된 담당자</b>만 확인(답변 및 입고) 처리가 가능합니다.</p>
             
             <!-- Pagination -->
             <div class="pagination">
@@ -408,6 +440,28 @@
     <div class="toast-container" id="toast-container"></div>
 
     <script>
+        // 클라우드플레어 D1 백엔드 연동용 전역 변수
+        let vendorsData = [];
+        let productsData = [];
+        let suppliersData = [];
+        let managersData = [];
+        let entries = [];
+        let pins = [];
+        
+        let currentUser = "";
+        let currentPin = "";
+        let currentPage = 1;
+        
+        // 🌟 관리자 비밀번호
+        const ADMIN_PW = "04017";
+        
+        // 🌟 권한이 부여된 담당자 명단
+        const AUTHORIZED_USERS = ['김현중', '김정욱', '박형삼', '박지영', '권은숙', '최유리', '송요운'];
+
+        // D1(SQLite) Boolean 처리 헬퍼 함수
+        const isTrue = val => val === 1 || val === true || val === 'true';
+
+        // 페이지 로드 후 스플래시 화면 숨기기
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const splash = document.getElementById('splash-screen');
@@ -416,99 +470,64 @@
                     setTimeout(() => splash.style.display = 'none', 800);
                 }
             }, 1500);
-        });
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const showBtn = document.getElementById('btn-show-sidebar');
-            if (sidebar.classList.contains('hidden')) {
-                sidebar.classList.remove('hidden'); showBtn.classList.add('hidden');
-            } else {
-                sidebar.classList.add('hidden'); showBtn.classList.remove('hidden');
-            }
-        }
-
-        let vendorsData = [];
-        let productsData = [];
-        let suppliersData = [];
-        let managersData = [];
-        
-        let db;
-        let pinsRef;
-        let entriesRef;
-        let entries = [];
-        let pins = {};
-        let currentUser = "";
-        let currentPin = "";
-        let currentPage = 1;
-        
-        const ADMIN_PW = "04017";
-        const AUTHORIZED_USERS = ['김현중', '김정욱', '박형삼', '박지영', '권은숙', '최유리', '송요운'];
-
-        function toggleExpander() {
-            const exp = document.getElementById('search-expander');
-            const icon = document.getElementById('expander-icon');
-            exp.classList.toggle('open');
-            icon.innerText = exp.classList.contains('open') ? '▼' : '▶';
-        }
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAA4fgWuHy2HdgNSQg2EVEKlGy-2Bh9T4",
-            authDomain: "tjpharm2038.firebaseapp.com",
-            databaseURL: "https://tjpharm2038-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "tjpharm2038",
-            storageBucket: "tjpharm2038.firebasestorage.app",
-            messagingSenderId: "936727740698",
-            appId: "1:936727740698:web:359e35c4a94a6d5d746ca3",
-            measurementId: "G-T273Z09FGK"
-        };
-
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        db = firebase.database();
-        
-        pinsRef = db.ref('tf_pins');
-        entriesRef = db.ref('tf_entries');
-
-        // 🌟 [트래픽 최적화] 무한 실시간 통신(.on) 대신 최초 1회 로딩(.once)으로 변경하여 한도 초과 방지
-        function loadAllDataOnce() {
-            db.ref('vendors').once('value', snap => { if(snap.exists()) vendorsData = Object.values(snap.val()); });
-            db.ref('products').once('value', snap => { if(snap.exists()) productsData = Object.values(snap.val()); });
-            db.ref('tf_suppliers').once('value', snap => { if(snap.exists()) suppliersData = Object.values(snap.val()); });
-            db.ref('tf_managers').once('value', snap => { if(snap.exists()) managersData = Object.values(snap.val()); });
             
-            pinsRef.once('value', snap => {
-                pins = snap.val() || {};
-                const display = document.getElementById('pin-list-display');
-                if (!display.classList.contains('hidden')) renderPinList();
-            });
+            // 페이지 접속 시 클라우드플레어 DB에서 데이터를 모두 가져옵니다.
+            loadAllData(); 
+        });
 
-            entriesRef.once('value', snap => {
-                const data = snap.val();
-                entries = [];
-                if (data) {
-                    for (let key in data) entries.push({...data[key], dbKey: key});
+        // 🌟 핵심 API 통신 함수 (파이어베이스 대체)
+        async function loadAllData() {
+            try {
+                const res = await fetch('/api?action=getAll');
+                const data = await res.json();
+                
+                productsData = data.products || [];
+                vendorsData = data.vendors || [];
+                suppliersData = data.suppliers || [];
+                managersData = data.managers || [];
+                pins = data.pins || [];
+                entries = data.entries || [];
+                
+                if (!document.getElementById('app-section').classList.contains('hidden')) {
+                    renderTable();
+                    showToast("🔄 최신 데이터를 불러왔습니다.");
                 }
-                entries.sort((a, b) => a.id - b.id);
-                if (!document.getElementById('app-section').classList.contains('hidden')) renderTable();
-                showToast("🔄 최신 데이터를 불러왔습니다.");
-            });
+            } catch (e) {
+                console.error(e);
+                showToast("데이터 로딩 중 오류가 발생했습니다. (API 확인 필요)", true);
+            }
         }
 
-        // 업로드 시간 메타데이터 리스너만 유지 (트래픽 매우 적음)
-        db.ref('metadata/upload_time').on('value', snap => {
-            const times = snap.val();
-            if(times) {
-                if(times.products) document.getElementById('time-products').innerText = `${times.products}`;
-                if(times.vendors) document.getElementById('time-vendors').innerText = `${times.vendors}`;
-                if(times.tf_suppliers) document.getElementById('time-suppliers').innerText = `${times.tf_suppliers}`;
-                if(times.tf_managers) document.getElementById('time-managers').innerText = `${times.tf_managers}`;
+        async function saveEntryToDB(entryData) {
+            await fetch('/api?action=addEntry', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(entryData)
+            });
+            await loadAllData(); // 완료 후 데이터 갱신
+        }
+
+        async function updateEntryInDB(id, updates) {
+            await fetch('/api?action=updateEntry', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, updates })
+            });
+            // 체크, 입고 등의 처리는 즉각 반영을 위해 로컬 변수도 수정 후 렌더링
+            const entryIndex = entries.findIndex(e => e.id === id);
+            if(entryIndex > -1) {
+                entries[entryIndex] = { ...entries[entryIndex], ...updates };
             }
-        });
+            renderTable();
+        }
 
         function formatCode3(code) {
             if(!code) return "";
             let c = String(code).trim();
-            return /^\d+$/.test(c) ? c.padStart(3, '0') : c;
+            if(/^\d+$/.test(c)) {
+                return c.padStart(3, '0');
+            }
+            return c;
         }
 
         function cleanCompanyName(name) {
@@ -522,43 +541,53 @@
         
         function login() {
             const pin = document.getElementById('user-pin').value;
-            if(pin.length !== 4 || isNaN(pin)) { showToast("⚠️ PIN 번호는 반드시 숫자 4자리로 입력해야 합니다.", true); return; }
+            if(pin.length !== 4 || isNaN(pin)) {
+                showToast("⚠️ PIN 번호는 반드시 숫자 4자리로 입력해야 합니다.", true);
+                return;
+            }
 
             currentPin = pin;
-            pinsRef.once('value', snap => {
-                pins = snap.val() || {};
-                if(pins[pin]) {
-                    const userData = pins[pin];
-                    if (typeof userData === 'string' || userData.approved === true) {
-                        currentUser = typeof userData === 'string' ? userData : userData.name;
-                        showApp();
-                    } else {
-                        showToast("⏳ 관리자 승인 대기 중입니다.", true);
-                    }
+            const userData = pins.find(p => p.pin === pin);
+            
+            if(userData) {
+                if (isTrue(userData.approved)) {
+                    currentUser = userData.name;
+                    showApp();
                 } else {
-                    elRegSec.classList.remove('hidden');
+                    showToast("⏳ 관리자 승인 대기 중입니다. 관리자에게 문의해주세요.", true);
                 }
-            });
+            } else {
+                elRegSec.classList.remove('hidden');
+            }
         }
 
         function logout() {
-            currentUser = ""; currentPin = "";
+            currentUser = "";
+            currentPin = "";
             document.getElementById('user-pin').value = "";
             elAppSec.classList.add('hidden');
             elLoginSec.classList.remove('hidden');
             elRegSec.classList.add('hidden');
         }
 
-        function registerPin() {
+        async function registerPin() {
             const name = document.getElementById('user-name').value.trim();
-            if(!name) { showToast("⚠️ 이름을 입력해주세요.", true); return; }
+            if(!name) { 
+                showToast("⚠️ 이름을 입력해주세요.", true); 
+                return; 
+            }
             
-            pinsRef.child(currentPin).set({ name: name, approved: false }).then(() => {
-                showToast("⏳ 등록 완료! 관리자의 승인 후 접속할 수 있습니다.");
-                document.getElementById('user-pin').value = "";
-                document.getElementById('user-name').value = "";
-                elRegSec.classList.add('hidden');
+            await fetch('/api?action=addPin', {
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin: currentPin, name: name, approved: false })
             });
+            
+            showToast("⏳ 등록 완료! 관리자의 승인 후 접속할 수 있습니다.");
+            document.getElementById('user-pin').value = "";
+            document.getElementById('user-name').value = "";
+            elRegSec.classList.add('hidden');
+            loadAllData();
         }
 
         function showApp() {
@@ -566,7 +595,7 @@
             elAppSec.classList.remove('hidden');
             document.getElementById('welcome-msg').innerHTML = `✅ 인증 완료! 환영합니다, <strong>${currentUser}</strong>님`;
             document.getElementById('i-reg').value = currentUser;
-            loadAllDataOnce(); // 앱 진입 시 데이터 로드
+            renderTable();
         }
 
         function addRow() {
@@ -587,17 +616,31 @@
 
             const pCode = prod.split(' ')[0] || '-';
             const pName = prod.substring(pCode.length).trim() || prod;
-            let pSpec = "", supplierName = "", managerName = "";
+            
+            let pSpec = "";
+            let supplierName = "";
+            let managerName = "";
 
-            const matchedProd = productsData.find(p => p.코드 === pCode);
+            const matchedProd = productsData.find(p => p.code === pCode);
             if(matchedProd) {
-                pSpec = matchedProd.규격 || "";
-                if(matchedProd.판매원) {
-                    const matchCode = formatCode3(matchedProd.판매원);
-                    const matchedSupplier = suppliersData.find(s => formatCode3(s.코드) === matchCode);
-                    supplierName = matchedSupplier ? cleanCompanyName(matchedSupplier.매입처명) : `미등록(${matchCode})`;
-                    const matchedManager = managersData.find(m => formatCode3(m.주문코드) === matchCode);
-                    managerName = matchedManager ? matchedManager.주문자 : `미등록(${matchCode})`;
+                pSpec = matchedProd.spec || "";
+                
+                if(matchedProd.seller) {
+                    const matchCode = formatCode3(matchedProd.seller);
+                    
+                    const matchedSupplier = suppliersData.find(s => formatCode3(s.code) === matchCode);
+                    if(matchedSupplier) {
+                        supplierName = cleanCompanyName(matchedSupplier.name);
+                    } else {
+                        supplierName = `미등록(코드:${matchCode})`;
+                    }
+                    
+                    const matchedManager = managersData.find(m => formatCode3(m.code) === matchCode);
+                    if(matchedManager) {
+                        managerName = matchedManager.name;
+                    } else {
+                        managerName = `미등록(코드:${matchCode})`;
+                    }
                 }
             }
 
@@ -605,63 +648,104 @@
             let vendParts = cleanVend.split(" - ");
             const vCode = vendParts[0].trim() || '-';
             const vName = vendParts[vendParts.length - 1].trim() || cleanVend;
+            
             const cleanCenter = center.split(' ')[1].replace("센터", "") || center;
 
             const now = new Date();
-            const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+            const dateStr = now.getFullYear() + "-" + 
+                           String(now.getMonth()+1).padStart(2,'0') + "-" + 
+                           String(now.getDate()).padStart(2,'0') + " " + 
+                           String(now.getHours()).padStart(2,'0') + ":" + 
+                           String(now.getMinutes()).padStart(2,'0');
 
             const newRow = {
-                id: now.getTime(), del: false, check: false, recv: false, 
-                pCode, pName, pSpec, qty, vCode, vName, center: cleanCenter, reg, regReason: reason, date: dateStr, 
-                supplierName, managerName, comp: "", compReasonSel: "", compReasonTxt: ""
+                id: String(now.getTime()),
+                del: false,
+                check: false,
+                recv: false, 
+                pCode: pCode,
+                pName: pName,
+                pSpec: pSpec,
+                qty: qty,
+                vCode: vCode,
+                vName: vName,
+                center: cleanCenter,
+                reg: reg,
+                regReason: reason,
+                dateStr: dateStr,
+                supplierName: supplierName,
+                managerName: managerName,
+                comp: "",
+                compReasonSel: "", 
+                compReasonTxt: ""  
             };
             
-            entriesRef.push(newRow).then(() => {
+            saveEntryToDB(newRow).then(() => {
                 document.getElementById('i-prod').value = "";
                 document.getElementById('i-vend').value = "";
                 document.getElementById('i-qty').value = "";
                 document.getElementById('i-reason').value = "";
                 showToast("✅ 신규 발주 라인이 등록되었습니다.");
                 currentPage = 1; 
-                loadAllDataOnce();
+            }).catch((error) => {
+                showToast("❌ 등록 실패: " + error.message, true);
             }).finally(() => {
                 document.getElementById('btn-add').disabled = false;
             });
         }
 
-        window.toggleCheck = function(dbKey, currentCheck) {
-            const isChecked = currentCheck === 'true';
+        window.toggleCheck = function(id, currentCheck) {
+            const isChecked = isTrue(currentCheck);
             const compName = !isChecked ? currentUser : "";
-            const selVal = document.getElementById(`comp-reason-sel-${dbKey}`)?.value || "";
-            const txtVal = document.getElementById(`comp-reason-txt-${dbKey}`)?.value.trim() || "";
+            
+            const selInput = document.getElementById(`comp-reason-sel-${id}`);
+            const txtInput = document.getElementById(`comp-reason-txt-${id}`);
+            
+            const selVal = selInput ? selInput.value : "";
+            const txtVal = txtInput ? txtInput.value.trim() : "";
 
-            entriesRef.child(dbKey).update({ check: !isChecked, comp: compName, compReasonSel: selVal, compReasonTxt: txtVal }).then(() => loadAllDataOnce());
-        };
-
-        window.toggleRecv = function(dbKey, currentRecv) {
-            const isRecv = currentRecv === 'true';
-            entriesRef.child(dbKey).update({ recv: !isRecv }).then(() => {
-                showToast(!isRecv ? "📦 정상적으로 입고 처리되었습니다." : "입고 취소됨");
-                loadAllDataOnce();
+            updateEntryInDB(id, { 
+                check: !isChecked,
+                comp: compName,
+                compReasonSel: selVal,
+                compReasonTxt: txtVal
             });
         };
 
-        window.updateCompReason = function(dbKey) {
-            const selVal = document.getElementById(`comp-reason-sel-${dbKey}`).value;
-            const txtVal = document.getElementById(`comp-reason-txt-${dbKey}`).value.trim();
-            entriesRef.child(dbKey).update({ compReasonSel: selVal, compReasonTxt: txtVal }).then(() => loadAllDataOnce());
-        };
-
-        window.toggleDel = function(dbKey, currentDel) {
-            const isDel = currentDel === 'true';
-            entriesRef.child(dbKey).update({ del: !isDel }).then(() => {
-                showToast(!isDel ? "🗑️ 휴지통으로 이동됨" : "✅ 복원됨");
-                loadAllDataOnce();
+        window.toggleRecv = function(id, currentRecv) {
+            const isRecv = isTrue(currentRecv);
+            updateEntryInDB(id, { recv: !isRecv }).then(() => {
+                showToast(!isRecv ? "📦 정상적으로 입고 처리되었습니다." : "입고 처리가 취소되었습니다.");
             });
         };
 
-        function resetPageAndRender() { currentPage = 1; renderTable(); }
-        function changePage(delta) { currentPage += delta; renderTable(); }
+        window.updateCompReason = function(id) {
+            const selVal = document.getElementById(`comp-reason-sel-${id}`).value;
+            const txtVal = document.getElementById(`comp-reason-txt-${id}`).value.trim();
+            
+            updateEntryInDB(id, { 
+                compReasonSel: selVal,
+                compReasonTxt: txtVal 
+            });
+        };
+
+        window.toggleDel = function(id, currentDel) {
+            const isDel = isTrue(currentDel);
+            updateEntryInDB(id, { del: !isDel }).then(() => {
+                if(!isDel) showToast("🗑️ 내역이 휴지통으로 이동되었습니다.");
+                else showToast("✅ 정상적으로 복원되었습니다.");
+            });
+        };
+
+        function resetPageAndRender() {
+            currentPage = 1;
+            renderTable();
+        }
+
+        function changePage(delta) {
+            currentPage += delta;
+            renderTable();
+        }
 
         function renderTable() {
             const tbody = document.querySelector('#data-table tbody');
@@ -673,24 +757,36 @@
             const centerFilter = document.getElementById('f-center').value;
             const pageLimit = parseInt(document.getElementById('f-limit').value);
             
-            let activeEntries = entries.filter(e => !e.del);
-            document.getElementById('m-total').innerText = activeEntries.length + "건";
-            document.getElementById('m-unchecked').innerText = activeEntries.filter(e => !e.check && !e.recv).length + "건";
-            document.getElementById('m-checked').innerText = activeEntries.filter(e => e.check && !e.recv).length + "건";
-            document.getElementById('m-recv').innerText = activeEntries.filter(e => e.recv).length + "건";
-
-            let displayData = [...entries].reverse(); 
+            let activeEntries = entries.filter(e => !isTrue(e.del));
+            let total = activeEntries.length;
             
-            if(filter === 'uncheck') displayData = displayData.filter(e => !e.del && !e.check && !e.recv);
-            else if(filter === 'check') displayData = displayData.filter(e => !e.del && e.check && !e.recv);
-            else if(filter === 'recv') displayData = displayData.filter(e => !e.del && e.recv);
-            else if(filter === 'all') displayData = displayData.filter(e => !e.del);
-            else if(filter === 'del') displayData = displayData.filter(e => e.del);
+            let received = activeEntries.filter(e => isTrue(e.recv)).length;
+            let checked = activeEntries.filter(e => isTrue(e.check_status) && !isTrue(e.recv)).length;
+            let unchecked = activeEntries.filter(e => !isTrue(e.check_status) && !isTrue(e.recv)).length;
+            
+            document.getElementById('m-total').innerText = total + "건";
+            document.getElementById('m-unchecked').innerText = unchecked + "건";
+            document.getElementById('m-checked').innerText = checked + "건";
+            document.getElementById('m-recv').innerText = received + "건";
 
-            if(centerFilter !== 'all') displayData = displayData.filter(e => e.center && e.center.includes(centerFilter));
+            let displayData = [...entries]; 
+            
+            if(filter === 'uncheck') displayData = displayData.filter(e => !isTrue(e.del) && !isTrue(e.check_status) && !isTrue(e.recv));
+            else if(filter === 'check') displayData = displayData.filter(e => !isTrue(e.del) && isTrue(e.check_status) && !isTrue(e.recv));
+            else if(filter === 'recv') displayData = displayData.filter(e => !isTrue(e.del) && isTrue(e.recv));
+            else if(filter === 'all') displayData = displayData.filter(e => !isTrue(e.del));
+            else if(filter === 'del') displayData = displayData.filter(e => isTrue(e.del));
 
-            const q = id => document.getElementById(id).value.toLowerCase();
-            const sPcode = q('s-pcode'), sPname = q('s-pname'), sVcode = q('s-vcode'), sVname = q('s-vname'), sReg = q('s-reg'), sComp = q('s-comp');
+            if(centerFilter !== 'all') {
+                displayData = displayData.filter(e => e.center && e.center.includes(centerFilter));
+            }
+
+            const sPcode = document.getElementById('s-pcode').value.toLowerCase();
+            const sPname = document.getElementById('s-pname').value.toLowerCase();
+            const sVcode = document.getElementById('s-vcode').value.toLowerCase();
+            const sVname = document.getElementById('s-vname').value.toLowerCase();
+            const sReg = document.getElementById('s-reg').value.toLowerCase();
+            const sComp = document.getElementById('s-comp').value.toLowerCase();
 
             if(sPcode) displayData = displayData.filter(e => (e.pCode||'').toLowerCase().includes(sPcode));
             if(sPname) displayData = displayData.filter(e => (e.pName||'').toLowerCase().includes(sPname));
@@ -701,10 +797,13 @@
 
             const totalRows = displayData.length;
             const totalPages = Math.max(1, Math.ceil(totalRows / pageLimit));
+            
             if (currentPage > totalPages) currentPage = totalPages;
             if (currentPage < 1) currentPage = 1;
 
-            const pagedData = displayData.slice((currentPage - 1) * pageLimit, currentPage * pageLimit);
+            const startIdx = (currentPage - 1) * pageLimit;
+            const endIdx = startIdx + pageLimit;
+            const pagedData = displayData.slice(startIdx, endIdx);
 
             document.getElementById('page-info').innerText = `${currentPage} / ${totalPages} 페이지`;
             document.getElementById('total-info').innerText = `검색된 데이터 총 ${totalRows}건`;
@@ -721,20 +820,28 @@
                 pagedData.forEach(e => {
                     let vAddr = "주소 정보 없음 (업데이트 필요)";
                     if (vendorsData.length > 0) {
-                        const matchedVend = vendorsData.find(v => v.코드 == e.vCode);
-                        if (matchedVend && matchedVend.주소) vAddr = matchedVend.주소;
+                        const matchedVend = vendorsData.find(v => v.code == e.vCode);
+                        if (matchedVend && matchedVend.address) vAddr = matchedVend.address;
                     }
 
                     const currentSel = e.compReasonSel || "";
                     const currentTxt = e.compReasonTxt !== undefined ? e.compReasonTxt : (e.compReason || "");
+
                     const isAuthorized = AUTHORIZED_USERS.includes(currentUser);
                     const isAuthor = (e.reg === currentUser);
                     
                     let disabledAttr = '';
-                    if (!isAuthorized) disabledAttr = 'disabled title="지정된 담당자만 처리할 수 있습니다."';
-                    else if (isAuthor) disabledAttr = 'disabled title="본인이 등록한 내역은 처리 불가합니다."';
+                    if (!isAuthorized) {
+                        disabledAttr = 'disabled title="지정된 담당자만 처리할 수 있습니다."';
+                    } else if (isAuthor) {
+                        disabledAttr = 'disabled title="본인이 등록한 내역은 처리 불가합니다."';
+                    }
                     
-                    const hideInputClass = (e.check && !currentTxt) ? 'hidden' : '';
+                    const delStatus = isTrue(e.del);
+                    const chkStatus = isTrue(e.check_status);
+                    const recvStatus = isTrue(e.recv);
+
+                    const hideInputClass = (chkStatus && !currentTxt) ? 'hidden' : '';
 
                     let mgrDisplay = e.managerName && !e.managerName.includes('미등록') ? `<span style="font-weight:bold; color:#1a5c99;">${e.managerName}</span>` : `<span style="color:#ccc;">${e.managerName || '-'}</span>`;
                     let compDisplay = e.comp ? `<span style="color:var(--success); font-weight:bold;">${e.comp}</span>` : `<span style="color:#ccc;">미답변</span>`;
@@ -742,16 +849,25 @@
                     let displayDate = e.date || '-';
                     if(displayDate !== '-' && displayDate.includes('-') && displayDate.length >= 10) {
                         const parts = displayDate.split(' ');
-                        if(parts.length === 2) displayDate = `${parts[0].substring(2).replace(/-/g, '.')} ${parts[1]}`;
+                        if(parts.length === 2) {
+                            const datePart = parts[0].substring(2).replace(/-/g, '.');
+                            displayDate = `${datePart} ${parts[1]}`;
+                        }
                     }
 
                     const tr = document.createElement('tr');
-                    if(e.recv) tr.style.backgroundColor = 'var(--received)';
+                    if(recvStatus) tr.style.backgroundColor = 'var(--received)';
                     
                     tr.innerHTML = `
-                        <td><input type="checkbox" ${e.del ? 'checked' : ''} onchange="window.toggleDel('${e.dbKey}', '${e.del}')"></td>
-                        <td><input type="checkbox" ${e.check ? 'checked' : ''} ${e.del ? 'disabled' : ''} ${disabledAttr} onchange="window.toggleCheck('${e.dbKey}', '${e.check}')"></td>
-                        <td><input type="checkbox" class="recv-cb" ${e.recv ? 'checked' : ''} ${e.del ? 'disabled' : ''} ${disabledAttr} onchange="window.toggleRecv('${e.dbKey}', '${e.recv}')"></td>
+                        <td><input type="checkbox" ${delStatus ? 'checked' : ''} onchange="window.toggleDel('${e.id}', '${delStatus}')"></td>
+                        <td>
+                            <input type="checkbox" ${chkStatus ? 'checked' : ''} ${delStatus ? 'disabled' : ''} ${disabledAttr} 
+                                   onchange="window.toggleCheck('${e.id}', '${chkStatus}')">
+                        </td>
+                        <td>
+                            <input type="checkbox" class="recv-cb" ${recvStatus ? 'checked' : ''} ${delStatus ? 'disabled' : ''} ${disabledAttr} 
+                                   onchange="window.toggleRecv('${e.id}', '${recvStatus}')">
+                        </td>
                         <td style="color:#1a5c99; font-weight:600; font-size:0.85rem;">${e.supplierName || '-'}</td>
                         <td style="font-size:0.85rem; color:#888;">${e.pCode || '-'}</td>
                         <td style="font-weight:600; text-align:left;">${e.pName || '-'}</td>
@@ -760,13 +876,22 @@
                         <td title="${vAddr}" style="font-size:0.85rem; color:#888; cursor:help; text-decoration:underline dashed #ccc; text-underline-offset: 4px;">${e.vCode || '-'}</td>
                         <td style="font-weight:500;">${e.vName || '-'}</td>
                         <td>${e.center || '-'}</td>
-                        <td>${e.reg || '-'}</td>
+                        <td style="font-weight:500;">${e.reg || '-'}</td>
                         <td style="font-size:0.85rem; color:#444; text-align:left; word-break:break-all;">${e.regReason || '-'}</td>
                         <td style="font-size:0.85rem; color:#777; letter-spacing:-0.5px;">${displayDate}</td>
-                        <td><div style="line-height:1.4;">${mgrDisplay}<hr style="margin:2px 0; border:0; border-top:1px dashed #eee;">${compDisplay}</div></td>
+                        <td>
+                            <div style="line-height:1.4;">
+                                ${mgrDisplay}
+                                <hr style="margin:2px 0; border:0; border-top:1px dashed #eee;">
+                                ${compDisplay}
+                            </div>
+                        </td>
                         <td style="min-width: 140px;">
                             <div style="display: flex; flex-direction: column; gap: 4px;">
-                                <select id="comp-reason-sel-${e.dbKey}" style="width:100%; padding:0.4rem; margin:0; border:1px solid var(--border); border-radius:4px; font-size:0.85rem;" ${e.check || e.del ? 'disabled' : ''} ${disabledAttr} onchange="window.updateCompReason('${e.dbKey}')">
+                                <select id="comp-reason-sel-${e.id}" 
+                                        style="width:100%; padding:0.4rem; margin:0; border:1px solid var(--border); border-radius:4px; font-size:0.85rem;"
+                                        ${chkStatus || delStatus ? 'disabled' : ''} ${disabledAttr}
+                                        onchange="window.updateCompReason('${e.id}')">
                                     <option value="" ${!currentSel ? 'selected' : ''}>- 1차 선택 -</option>
                                     <option value="1 제약사품절" ${currentSel === '1 제약사품절' ? 'selected' : ''}>1 제약사품절</option>
                                     <option value="2 수급불안정품목" ${currentSel === '2 수급불안정품목' ? 'selected' : ''}>2 수급불안정품목</option>
@@ -776,11 +901,18 @@
                                     <option value="6 주문불가" ${currentSel === '6 주문불가' ? 'selected' : ''}>6 주문불가</option>
                                     <option value="7 기타" ${currentSel === '7 기타' ? 'selected' : ''}>7 기타</option>
                                 </select>
-                                <input type="text" id="comp-reason-txt-${e.dbKey}" value="${currentTxt}" title="${currentTxt.replace(/"/g, '&quot;')}" placeholder="${e.check ? '' : '2차 상세 사유 기입'}" class="${hideInputClass}" style="width:100%; padding:0.4rem; margin:0; border:1px solid var(--border); border-radius:4px; font-size:0.85rem; box-sizing: border-box;" ${e.check || e.del ? 'disabled' : ''} ${disabledAttr} onchange="window.updateCompReason('${e.dbKey}')">
+                                <input type="text" id="comp-reason-txt-${e.id}" 
+                                       value="${currentTxt}" 
+                                       title="${currentTxt.replace(/"/g, '&quot;')}" 
+                                       placeholder="${chkStatus ? '' : '2차 상세 사유 기입'}" 
+                                       class="${hideInputClass}"
+                                       style="width:100%; padding:0.4rem; margin:0; border:1px solid var(--border); border-radius:4px; font-size:0.85rem; box-sizing: border-box;"
+                                       ${chkStatus || delStatus ? 'disabled' : ''} ${disabledAttr}
+                                       onchange="window.updateCompReason('${e.id}')">
                             </div>
                         </td>
                     `;
-                    if(e.del) tr.style.opacity = '0.5';
+                    if(delStatus) tr.style.opacity = '0.5';
                     tbody.appendChild(tr);
                 });
             }
@@ -789,165 +921,303 @@
         function checkAdmin() {
             if(document.getElementById('admin-pw').value === ADMIN_PW) {
                 document.getElementById('admin-menu').classList.remove('hidden');
-            } else showToast("⚠️ 비밀번호 오류", true);
+            } else {
+                showToast("⚠️ 비밀번호가 일치하지 않습니다.", true);
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const showBtn = document.getElementById('btn-show-sidebar');
+            
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                showBtn.classList.add('hidden');
+            } else {
+                sidebar.classList.add('hidden');
+                showBtn.classList.remove('hidden');
+            }
+        }
+
+        function toggleExpander() {
+            const exp = document.getElementById('search-expander');
+            const icon = document.getElementById('expander-icon');
+            exp.classList.toggle('open');
+            icon.innerText = exp.classList.contains('open') ? '▼' : '▶';
+        }
+
+        function togglePinList() {
+            const display = document.getElementById('pin-list-display');
+            if (!display.classList.contains('hidden')) {
+                display.classList.add('hidden');
+                return;
+            }
+            display.classList.remove('hidden');
+            renderPinList();
         }
 
         function renderPinList() {
             const display = document.getElementById('pin-list-display');
-            const pinKeys = Object.keys(pins);
-            if (pinKeys.length === 0) { display.innerHTML = '<p style="color: gray; text-align: center; margin: 0;">등록된 사용자가 없습니다.</p>'; return; }
-
-            const sortedPins = pinKeys.map(pin => {
-                const data = pins[pin];
-                if (typeof data === 'string') return { pin: pin, name: data, approved: true };
-                else return { pin: pin, name: data.name, approved: data.approved };
-            }).sort((a, b) => a.name.localeCompare(b.name));
             
-            let html = `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #eee; padding-bottom: 0.5rem; margin-bottom: 0.5rem;"><strong>총 ${sortedPins.length}명 등록됨</strong></div><ul style="list-style: none; padding: 0; margin: 0;">`;
+            if (pins.length === 0) {
+                display.innerHTML = '<p style="color: gray; text-align: center; margin: 0;">등록된 사용자가 없습니다.</p>';
+                return;
+            }
+
+            const sortedPins = [...pins].sort((a, b) => a.name.localeCompare(b.name));
+            
+            let html = `
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #eee; padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                    <strong>총 ${sortedPins.length}명 등록됨</strong>
+                </div>
+                <ul style="list-style: none; padding: 0; margin: 0;">`;
+                
             sortedPins.forEach(item => {
-                let approveBtn = !item.approved ? `<button onclick="window.approvePin('${item.pin}', '${item.name}')" style="width: auto; padding: 0.2rem 0.5rem; font-size: 0.8rem; background-color: var(--success); color: white; border: 1px solid var(--success); margin:0; margin-right:0.5rem;">✅ 승인</button>` : '';
-                let statusText = !item.approved ? `<span style="color: #f59e0b; font-weight: bold;">(⏳대기중)</span>` : '';
-                let nameColor = item.approved ? 'var(--primary)' : 'gray';
+                const isApproved = isTrue(item.approved);
+                let approveBtn = !isApproved ? 
+                    `<button onclick="window.approvePin('${item.pin}', '${item.name}')" style="width: auto; padding: 0.2rem 0.5rem; font-size: 0.8rem; background-color: var(--success); color: white; border: 1px solid var(--success); margin:0; margin-right:0.5rem;">✅ 승인</button>` : '';
+                
+                let statusText = !isApproved ? `<span style="color: #f59e0b; font-weight: bold;">(⏳대기중)</span>` : '';
+                let nameColor = isApproved ? 'var(--primary)' : 'gray';
 
                 html += `<li style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0;">
-                            <div><strong style="color: ${nameColor}; font-size: 1.05rem;">${item.name}</strong> <span style="color: gray; font-size: 0.85rem; margin-left: 0.5rem;">(PIN: ${item.pin}) ${statusText}</span></div>
-                            <div style="display:flex;">${approveBtn}<button onclick="window.deletePin('${item.pin}', '${item.name}')" style="width: auto; padding: 0.2rem 0.5rem; font-size: 0.8rem; background-color: white; color: #ff3333; border: 1px solid #ff3333; margin:0;">삭제</button></div>
+                            <div>
+                                <strong style="color: ${nameColor}; font-size: 1.05rem;">${item.name}</strong> 
+                                <span style="color: gray; font-size: 0.85rem; margin-left: 0.5rem;">(PIN: ${item.pin}) ${statusText}</span>
+                            </div>
+                            <div style="display:flex;">
+                                ${approveBtn}
+                                <button onclick="window.deletePin('${item.pin}', '${item.name}')" style="width: auto; padding: 0.2rem 0.5rem; font-size: 0.8rem; background-color: white; color: #ff3333; border: 1px solid #ff3333; margin:0;">삭제</button>
+                            </div>
                          </li>`;
             });
             html += '</ul>';
             display.innerHTML = html;
         }
 
-        window.approvePin = (pin, name) => pinsRef.child(pin).update({ approved: true }).then(() => { showToast(`✅ ${name} 승인 완료`); loadAllDataOnce(); });
-        window.deletePin = (pin, name) => { if(confirm(`${name} 직원의 PIN(${pin}) 삭제하시겠습니까?`)) pinsRef.child(pin).remove().then(() => { showToast("🗑️ 삭제됨"); loadAllDataOnce(); }); };
+        window.approvePin = async function(pin, name) {
+            await fetch('/api?action=addPin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin: pin, name: name, approved: true })
+            });
+            showToast(`✅ ${name}님의 접속이 정상적으로 승인되었습니다.`);
+            loadAllData();
+        };
 
-        function clearData() { if(confirm("🚨 발주 내역을 전부 초기화하시겠습니까?")) entriesRef.remove().then(() => { showToast("✅ 초기화 완료"); loadAllDataOnce(); }); }
-        function clearPins() { if(confirm("🚨 PIN 내역을 전부 초기화하시겠습니까?")) pinsRef.remove().then(() => { showToast("✅ 초기화 완료"); logout(); }); }
+        window.deletePin = async function(pin, name) {
+            if(confirm(`[${name}] 직원의 PIN(${pin}) 등록 내역을 정말 삭제하시겠습니까?`)) {
+                await fetch('/api?action=deletePin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: pin })
+                });
+                showToast(`✅ ${name}님의 PIN 내역이 삭제되었습니다.`);
+                loadAllData();
+            }
+        };
 
-        function exportExcel() {
-            if(entries.length === 0) return showToast("⚠️ 다운로드할 데이터가 없습니다.", true);
-            const exportData = entries.map(e => ({
-                "진행상태": e.check ? (e.recv ? "✅입고완료" : "✅답변완료") : "미체크",
-                "매입처": e.supplierName || '-', "제품코드": e.pCode || '-', "제품명": e.pName || '-',
-                "규격": e.pSpec || '-', "수량": Number(e.qty) || 0, "거래처코드": e.vCode || '-',
-                "거래처명": e.vName || '-', "센터": e.center || '-', "등록자": e.reg || '-',
-                "등록 사유": e.regReason || '-', "등록일시": e.date || '-', "담당자": e.managerName || '-',
-                "답변자": e.comp || '-', "비고": [e.compReasonSel, e.compReasonTxt].filter(Boolean).join(" / ") || '-'
-            }));
-            const ws = XLSX.utils.json_to_sheet(exportData);
-            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "발주내역");
-            XLSX.writeFile(wb, `TJPHARM_발주내역_${new Date().toISOString().split('T')[0]}.xlsx`);
+        async function clearData(action) {
+            let msg = action === 'clearAllEntries' ? "발주 내역" : "PIN 등록 내역";
+            if(confirm(`🚨 경고: 모든 ${msg}이 초기화됩니다. 계속하시겠습니까?`)) {
+                await fetch('/api?action=' + action, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                showToast(`✅ 모든 ${msg}이 성공적으로 초기화되었습니다.`);
+                if(action === 'clearAllPins') logout();
+                loadAllData();
+            }
         }
 
-        async function uploadDataInChunks(refPath, dataArray, timePath) {
-            try {
-                await db.ref(refPath).remove();
-                const CHUNK_SIZE = 1000;
-                for (let i = 0; i < dataArray.length; i += CHUNK_SIZE) {
-                    const chunk = dataArray.slice(i, i + CHUNK_SIZE);
-                    const updates = {};
-                    chunk.forEach((item, index) => { updates[(i + index).toString()] = item; });
-                    await db.ref(refPath).update(updates);
+        function exportExcel() {
+            if(entries.length === 0) { showToast("⚠️ 내보낼 데이터가 없습니다.", true); return; }
+
+            const filterElement = document.querySelector('input[name="filter"]:checked');
+            const filter = filterElement ? filterElement.value : 'all';
+            const centerFilter = document.getElementById('f-center').value;
+
+            let filteredEntries = [...entries].reverse();
+
+            if(filter === 'uncheck') filteredEntries = filteredEntries.filter(e => !isTrue(e.del) && !isTrue(e.check_status) && !isTrue(e.recv));
+            else if(filter === 'check') filteredEntries = filteredEntries.filter(e => !isTrue(e.del) && isTrue(e.check_status) && !isTrue(e.recv));
+            else if(filter === 'recv') filteredEntries = filteredEntries.filter(e => !isTrue(e.del) && isTrue(e.recv));
+            else if(filter === 'all') filteredEntries = filteredEntries.filter(e => !isTrue(e.del));
+            else if(filter === 'del') filteredEntries = filteredEntries.filter(e => isTrue(e.del));
+
+            if(centerFilter !== 'all') {
+                filteredEntries = filteredEntries.filter(e => e.center && e.center.includes(centerFilter));
+            }
+            const sPcode = document.getElementById('s-pcode').value.toLowerCase();
+            const sPname = document.getElementById('s-pname').value.toLowerCase();
+            const sVcode = document.getElementById('s-vcode').value.toLowerCase();
+            const sVname = document.getElementById('s-vname').value.toLowerCase();
+            const sReg = document.getElementById('s-reg').value.toLowerCase();
+            const sComp = document.getElementById('s-comp').value.toLowerCase();
+
+            if(sPcode) filteredEntries = filteredEntries.filter(e => (e.pCode||'').toLowerCase().includes(sPcode));
+            if(sPname) filteredEntries = filteredEntries.filter(e => (e.pName||'').toLowerCase().includes(sPname));
+            if(sVcode) filteredEntries = filteredEntries.filter(e => (e.vCode||'').toLowerCase().includes(sVcode));
+            if(sVname) filteredEntries = filteredEntries.filter(e => (e.vName||'').toLowerCase().includes(sVname));
+            if(sReg) filteredEntries = filteredEntries.filter(e => (e.reg||'').toLowerCase().includes(sReg));
+            if(sComp) filteredEntries = filteredEntries.filter(e => (e.comp||'').toLowerCase().includes(sComp));
+
+            if(filteredEntries.length === 0) {
+                showToast("⚠️ 현재 검색/필터 조건에 맞는 데이터가 없습니다.", true);
+                return;
+            }
+            
+            const exportData = filteredEntries.map(e => {
+                const currentSel = e.compReasonSel || "";
+                const currentTxt = e.compReasonTxt !== undefined ? e.compReasonTxt : (e.compReason || "");
+                const combinedReason = [currentSel, currentTxt].filter(Boolean).join(" / ") || '-';
+
+                return {
+                    "삭제상태": isTrue(e.del) ? "🗑️삭제됨" : "정상",
+                    "진행상태": isTrue(e.check_status) ? (isTrue(e.recv) ? "✅입고완료" : "✅답변완료") : "미체크",
+                    "매입처": e.supplierName || '-',
+                    "제품코드": e.pCode || '-',
+                    "제품명": e.pName || '-',
+                    "규격": e.pSpec || '-',
+                    "수량": Number(e.qty) || 0,
+                    "거래처코드": e.vCode || '-',
+                    "거래처명": e.vName || '-',
+                    "센터": e.center || '-',
+                    "등록자": e.reg || '-',
+                    "등록 사유": e.regReason || '-',
+                    "등록일시": e.date || '-',
+                    "담당자": e.managerName || '-',
+                    "답변자": e.comp || '-',
+                    "비고": combinedReason
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            const workbook = XLSX.utils.book_new();
+            
+            worksheet['!cols'] = [
+                { wch: 10 }, { wch: 12 }, { wch: 15 }, { wch: 12 }, { wch: 25 }, 
+                { wch: 10 }, { wch: 8 },  { wch: 12 }, { wch: 20 }, { wch: 10 }, 
+                { wch: 10 }, { wch: 20 }, { wch: 18 }, { wch: 10 }, { wch: 10 }, { wch: 30 }
+            ];
+            
+            XLSX.utils.book_append_sheet(workbook, worksheet, "발주내역");
+
+            const today = new Date();
+            const dateString = today.getFullYear() + "-" + 
+                   String(today.getMonth() + 1).padStart(2, '0') + "-" + 
+                   String(today.getDate()).padStart(2, '0');
+            
+            let filterName = "전체";
+            if (filter === 'uncheck') filterName = "미체크";
+            else if (filter === 'check') filterName = "답변완료";
+            else if (filter === 'recv') filterName = "입고완료";
+            else if (filter === 'del') filterName = "삭제내역";
+            
+            XLSX.writeFile(workbook, `TJPHARM_발주TF_발주내역_${filterName}_${dateString}.xlsx`);
+        }
+
+        function showToast(msg, isError=false) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            if(isError) toast.style.backgroundColor = '#d32f2f';
+            toast.innerText = msg;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => container.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        // 클라우드플레어 D1용 엑셀 업로드 통신 로직
+        function uploadExcel(tableName, inputId) {
+            const fileInput = document.getElementById(inputId);
+            const btn = document.getElementById(inputId.replace('file', 'btn-upload'));
+            if (fileInput.files.length === 0) { showToast("⚠️ 엑셀 파일을 선택해주세요.", true); return; }
+            if (!confirm(`🚨 경고: 기존 데이터가 모두 지워지고 이 엑셀 파일 내용으로 덮어쓰기 됩니다. 계속하시겠습니까?`)) return;
+
+            if(btn) {
+                btn.disabled = true;
+                btn.innerText = "⏳ 업로드 중...";
+            }
+            showToast("⏳ 엑셀을 읽는 중입니다. 잠시만 기다려주세요...");
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, {defval: ""});
+
+                    let rows = [];
+                    jsonData.forEach(r => {
+                        if(tableName === 'products' && r['코드']) {
+                            rows.push({
+                                code: String(r['코드']).replace(/\.0$/, '').trim().padStart(6, '0'), 
+                                name: String(r['상품명'] || '').trim(), 
+                                spec: String(r['규격'] || '').trim(), 
+                                seller: getLastMatchingColumn(r, '판매원')
+                            });
+                        }
+                        if(tableName === 'vendors' && r['코드']) {
+                            rows.push({
+                                code: String(r['코드']).replace(/\.0$/, '').trim(), 
+                                name: String(r['매출처명'] || '').trim(), 
+                                region: String(r['지역'] || '').trim(), 
+                                address: String(r['주소'] || '').trim(), 
+                                center: String(r['센타구분'] || '').replace(/센터/g, '').trim()
+                            });
+                        }
+                        if(tableName === 'suppliers' && r['코드']) {
+                            rows.push({
+                                code: String(r['코드']).replace(/\.0$/, '').trim(), 
+                                name: getLastMatchingColumn(r, '매입처')
+                            });
+                        }
+                        if(tableName === 'managers' && r['주문코드']) {
+                            rows.push({
+                                code: String(r['주문코드']).replace(/\.0$/, '').trim(), 
+                                name: getLastMatchingColumn(r, '주문자')
+                            });
+                        }
+                    });
+
+                    // 중복 제거 (products 예시)
+                    if(tableName === 'products') {
+                        const uniqueMap = new Map();
+                        rows.forEach(r => uniqueMap.set(r.code, r));
+                        rows = Array.from(uniqueMap.values());
+                    }
+
+                    await fetch('/api?action=uploadMaster', {
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ table: tableName, rows: rows })
+                    });
+
+                    showToast(`✅ ${tableName} 업로드 완료!`);
+                    fileInput.value = ""; 
+                    loadAllData();
+                } catch(err) {
+                    showToast("❌ 업로드 처리 중 오류가 발생했습니다.", true);
+                } finally {
+                    if(btn) {
+                        btn.disabled = false;
+                        btn.innerText = "데이터 덮어쓰기";
+                    }
                 }
-                const now = new Date();
-                const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-                await db.ref(timePath).set(timeStr);
-                showToast(`✅ ${dataArray.length}건 덮어쓰기 완료!`);
-            } catch (err) { showToast("❌ 오류: " + err.message, true); }
+            };
+            reader.readAsArrayBuffer(fileInput.files[0]);
         }
 
         function getLastMatchingColumn(row, keyword) {
             const key = Object.keys(row).reverse().find(k => k.trim().includes(keyword));
             return key && row[key] != null ? String(row[key]).replace(/\.0$/, '').trim() : "";
-        }
-
-        function uploadProductsExcel() {
-            const fileInput = document.getElementById('file-products');
-            const btn = document.getElementById('btn-upload-prod');
-            if (fileInput.files.length === 0) return showToast("⚠️ 파일 선택 필요", true);
-            if (!confirm("상품 데이터를 덮어쓰기 하시겠습니까?")) return;
-            
-            btn.disabled = true; btn.innerText = "⏳ 업로드 중...";
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
-                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {defval: ""});
-                const formatted = json.map(r => ({
-                    '코드': String(r['코드'] || '').replace(/\.0$/, '').trim().padStart(6, '0'),
-                    '상품명': String(r['상품명'] || '').trim(),
-                    '규격': String(r['규격'] || '').trim(),
-                    '판매원': getLastMatchingColumn(r, '판매원')
-                })).filter(r => r['코드'] !== '000000');
-                await uploadDataInChunks('products', formatted, 'metadata/upload_time/products');
-                btn.disabled = false; btn.innerText = "상품 데이터 덮어쓰기"; fileInput.value = ""; loadAllDataOnce();
-            };
-            reader.readAsArrayBuffer(fileInput.files[0]);
-        }
-
-        function uploadVendorsExcel() {
-            const fileInput = document.getElementById('file-vendors');
-            const btn = document.getElementById('btn-upload-vend');
-            if (fileInput.files.length === 0) return showToast("⚠️ 파일 선택 필요", true);
-            if (!confirm("매출처 데이터를 덮어쓰기 하시겠습니까?")) return;
-
-            btn.disabled = true; btn.innerText = "⏳ 업로드 중...";
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
-                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {defval: ""});
-                const formatted = json.map(r => ({
-                    '코드': String(r['코드'] || '').replace(/\.0$/, '').trim(),
-                    '지역': String(r['지역'] || '').trim(),
-                    '매출처명': String(r['매출처명'] || '').trim(),
-                    '주소': String(r['주소'] || '').trim(),
-                    '센터': String(r['센타구분'] || '').replace(/센터/g, '').trim()
-                })).filter(r => r['코드'] !== '');
-                await uploadDataInChunks('vendors', formatted, 'metadata/upload_time/vendors');
-                btn.disabled = false; btn.innerText = "매출처 데이터 덮어쓰기"; fileInput.value = ""; loadAllDataOnce();
-            };
-            reader.readAsArrayBuffer(fileInput.files[0]);
-        }
-
-        function uploadSuppliersExcel() {
-            const fileInput = document.getElementById('file-suppliers');
-            const btn = document.getElementById('btn-upload-sup');
-            if (fileInput.files.length === 0) return showToast("⚠️ 파일 선택 필요", true);
-            if (!confirm("매입처 데이터를 덮어쓰기 하시겠습니까?")) return;
-
-            btn.disabled = true; btn.innerText = "⏳ 업로드 중...";
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
-                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {defval: ""});
-                const formatted = json.map(r => ({
-                    '코드': String(r['코드'] || '').replace(/\.0$/, '').trim(),
-                    '매입처명': getLastMatchingColumn(r, '매입처')
-                })).filter(r => r['코드'] !== '');
-                await uploadDataInChunks('tf_suppliers', formatted, 'metadata/upload_time/tf_suppliers');
-                btn.disabled = false; btn.innerText = "매입처 데이터 덮어쓰기"; fileInput.value = ""; loadAllDataOnce();
-            };
-            reader.readAsArrayBuffer(fileInput.files[0]);
-        }
-
-        function uploadManagersExcel() {
-            const fileInput = document.getElementById('file-managers');
-            const btn = document.getElementById('btn-upload-man');
-            if (fileInput.files.length === 0) return showToast("⚠️ 파일 선택 필요", true);
-            if (!confirm("담당자 데이터를 덮어쓰기 하시겠습니까?")) return;
-
-            btn.disabled = true; btn.innerText = "⏳ 업로드 중...";
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                const workbook = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
-                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {defval: ""});
-                const formatted = json.map(r => ({
-                    '주문코드': getLastMatchingColumn(r, '주문코드'),
-                    '주문자': getLastMatchingColumn(r, '주문자')
-                })).filter(r => r['주문코드'] !== '');
-                await uploadDataInChunks('tf_managers', formatted, 'metadata/upload_time/tf_managers');
-                btn.disabled = false; btn.innerText = "담당자 데이터 덮어쓰기"; fileInput.value = ""; loadAllDataOnce();
-            };
-            reader.readAsArrayBuffer(fileInput.files[0]);
         }
 
         function setupAutocomplete(inputId, listId, dataArrayFunc, searchKeys, displayFunc, onSelect) {
@@ -958,10 +1228,17 @@
             input.addEventListener('input', function() {
                 const val = this.value.trim().toLowerCase().replace(/\^/g, ' ');
                 const searchTerms = val.split(/\s+/).filter(t => t.length > 0);
-                list.innerHTML = ''; currentFocus = -1;
+                list.innerHTML = '';
+                currentFocus = -1;
                 
-                if (searchTerms.length === 0) { list.style.display = 'none'; return; }
-                const matches = dataArrayFunc().filter(item => {
+                if (searchTerms.length === 0) {
+                    list.style.display = 'none';
+                    return;
+                }
+
+                const currentData = dataArrayFunc(); 
+                
+                const matches = currentData.filter(item => {
                     if(!item) return false;
                     const combinedStr = searchKeys.map(key => item[key] || '').join(' ').toLowerCase();
                     return searchTerms.every(term => combinedStr.includes(term));
@@ -969,55 +1246,100 @@
 
                 if (matches.length > 0) {
                     matches.forEach(item => {
-                        const li = document.createElement('li'); li.innerHTML = displayFunc(item);
-                        li.onclick = () => { onSelect(item); list.style.display = 'none'; }; list.appendChild(li);
+                        const li = document.createElement('li');
+                        li.innerHTML = displayFunc(item);
+                        li.onclick = function() {
+                            onSelect(item);
+                            list.style.display = 'none';
+                        };
+                        list.appendChild(li);
                     });
                     list.style.display = 'block';
-                } else { list.style.display = 'none'; }
+                } else {
+                    list.style.display = 'none';
+                }
             });
 
-            document.addEventListener('click', e => { if (e.target !== input) list.style.display = 'none'; });
+            document.addEventListener('click', function(e) {
+                if (e.target !== input) list.style.display = 'none';
+            });
 
+            // 방향키 조작 이벤트
             input.addEventListener('keydown', function(e) {
                 let items = list.getElementsByTagName('li');
                 if (!items || items.length === 0) return;
-                if (e.key === "ArrowDown") { currentFocus++; addActive(items); }
-                else if (e.key === "ArrowUp") { currentFocus--; addActive(items); }
-                else if (e.key === "Enter") { e.preventDefault(); if (currentFocus > -1 && items[currentFocus]) items[currentFocus].click(); }
+
+                if (e.key === "ArrowDown") {
+                    currentFocus++;
+                    addActive(items);
+                } else if (e.key === "ArrowUp") {
+                    currentFocus--;
+                    addActive(items);
+                } else if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (currentFocus > -1 && items[currentFocus]) {
+                        items[currentFocus].click();
+                    }
+                }
             });
 
             function addActive(items) {
-                Array.from(items).forEach(i => i.classList.remove("autocomplete-active"));
+                if (!items) return false;
+                removeActive(items);
                 if (currentFocus >= items.length) currentFocus = 0;
-                if (currentFocus < 0) currentFocus = items.length - 1;
+                if (currentFocus < 0) currentFocus = (items.length - 1);
                 items[currentFocus].classList.add("autocomplete-active");
                 items[currentFocus].scrollIntoView({ block: "nearest" });
+            }
+
+            function removeActive(items) {
+                for (let i = 0; i < items.length; i++) {
+                    items[i].classList.remove("autocomplete-active");
+                }
             }
         }
 
         window.addEventListener('DOMContentLoaded', function() {
-            setupAutocomplete('i-vend', 'i-vend-list', 
-                () => vendorsData.filter(v => !(v.매출처명||'').includes('(특별)') && (v.코드||'').toUpperCase().match(/^[7SM]/)), 
-                ['매출처명', '지역', '주소', '코드', '센터'], 
-                i => `<strong>${i.매출처명}</strong> <span class="text-small">${i.센터 ? `<span style="color:#2e90e8 !important; font-weight:bold;">[${i.센터}]</span> ` : ''}${i.지역} | ${i.코드} | ${i.주소}</span>`,
-                i => document.getElementById('i-vend').value = `${i.코드} - ${i.매출처명}`
+            setupAutocomplete(
+                'i-vend', 'i-vend-list', 
+                () => {
+                    return vendorsData.filter(v => {
+                        const code = v.code ? v.code.toString().toUpperCase() : "";
+                        const name = v.name ? v.name.toString() : ""; 
+                        if (name.includes('(특별)')) return false;
+                        return code.startsWith('7') || code.startsWith('S') || code.startsWith('M');
+                    });
+                }, 
+                ['name', 'region', 'address', 'code', 'center'], 
+                (item) => {
+                    let centerTag = item.center ? `<span style="color:#2e90e8 !important; font-weight:bold;">[${item.center}]</span> ` : '';
+                    return `<strong>${item.name}</strong> <span class="text-small">${centerTag}${item.region} | ${item.code} | ${item.address}</span>`;
+                },
+                (item) => { document.getElementById('i-vend').value = `${item.code} - ${item.name}`; }
             );
 
-            setupAutocomplete('i-prod', 'i-prod-list', () => productsData, ['상품명', '코드', '규격'],
-                i => {
+            setupAutocomplete(
+                'i-prod', 'i-prod-list', 
+                () => productsData, 
+                ['name', 'code', 'spec'],
+                (item) => {
                     let sName = "-", mName = "-", debugCode = "";
-                    if(i.판매원) {
-                        debugCode = formatCode3(i.판매원);
-                        const sup = suppliersData.find(s => formatCode3(s.코드) === debugCode);
-                        sName = sup ? cleanCompanyName(sup.매입처명) : `미등록(코드:${debugCode})`; 
-                        const mgr = managersData.find(m => formatCode3(m.주문코드) === debugCode);
-                        mName = mgr ? mgr.주문자 : `미등록(코드:${debugCode})`; 
+                    if(item.seller) {
+                        debugCode = formatCode3(item.seller);
+                        const sup = suppliersData.find(s => formatCode3(s.code) === debugCode);
+                        sName = sup ? cleanCompanyName(sup.name) : `미등록(코드:${debugCode})`; 
+                        const mgr = managersData.find(m => formatCode3(m.code) === debugCode);
+                        mName = mgr ? mgr.name : `미등록(코드:${debugCode})`; 
                     }
-                    return `<div style="padding: 2px 0; line-height: 1.4;"><strong>${i.상품명}</strong> <span class="text-small">${i.코드} | ${i.규격}</span><br><span style="font-size: 11px; color: #0066cc; font-weight:500;">🏢 ${sName} &nbsp;|&nbsp; 👨‍💼 ${mName}</span></div>`;
+                    return `<div style="padding: 2px 0; line-height: 1.4;">
+                                <strong>${item.name}</strong> <span class="text-small">${item.code} | ${item.spec}</span><br>
+                                <span style="font-size: 11px; color: #0066cc; font-weight:500;">🏢 ${sName} &nbsp;|&nbsp; 👨‍💼 ${mName}</span>
+                            </div>`;
                 },
-                i => document.getElementById('i-prod').value = `${i.코드} ${i.상품명}`
+                (item) => { document.getElementById('i-prod').value = `${item.code} ${item.name}`; }
             );
         });
+
     </script>
 </body>
 </html>
