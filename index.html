@@ -695,6 +695,7 @@
         let currentUser = "";
         let currentPin = "";
         let currentPage = 1;
+        let autoRefreshTimer = null; // 🌟 자동 새로고침 타이머 변수 추가
         
         // 🌟 관리자 비밀번호
         const ADMIN_PW = "04017";
@@ -721,8 +722,8 @@
             loadAllData(); 
         });
 
-        // 🌟 핵심 API 통신 함수 (클라우드플레어 전용)
-        async function loadAllData() {
+        // 🌟 백그라운드 자동 갱신을 위해 isSilent 파라미터 추가
+        async function loadAllData(isSilent = false) {
             try {
                 const res = await fetch('/api?action=getAll');
                 const data = await res.json();
@@ -745,11 +746,11 @@
 
                 if (!document.getElementById('app-section').classList.contains('hidden')) {
                     renderTable();
-                    showToast("🔄 최신 데이터를 불러왔습니다.");
+                    if (!isSilent) showToast("🔄 최신 데이터를 불러왔습니다.");
                 }
             } catch (e) {
                 console.error(e);
-                showToast("데이터 로딩 중 오류가 발생했습니다. (API 확인 필요)", true);
+                if (!isSilent) showToast("데이터 로딩 중 오류가 발생했습니다. (API 확인 필요)", true);
             }
         }
 
@@ -766,29 +767,30 @@
             }
         }
 
-        // 🌟 업데이트 로직 보완 (check_status 동기화 적용 완료)
-        async function updateEntryInDB(id, updates) {
-            try {
-                await fetch('/api?action=updateEntry', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: id, updates: updates })
-                });
-                
-                // 화면 즉시 갱신을 위한 로컬 데이터 수정
-                const entryIndex = entries.findIndex(e => e.id === id);
-                if (entryIndex > -1) {
-                    const localUpdates = { ...updates };
-                    // 화면 렌더링에 사용되는 check_status 변수를 맞춤 동기화
-                    if (localUpdates.check !== undefined) {
-                        localUpdates.check_status = localUpdates.check ? 1 : 0;
-                    }
-                    entries[entryIndex] = { ...entries[entryIndex], ...localUpdates };
+        // 🌟 즉시 화면 이동 (Optimistic UI) 기법 적용
+        function updateEntryInDB(id, updates) {
+            // 1. 화면 즉시 반영 (서버 응답을 기다리지 않음)
+            const entryIndex = entries.findIndex(e => e.id === id);
+            if (entryIndex > -1) {
+                const localUpdates = { ...updates };
+                // check 상태 변경 시 렌더링용 check_status 변수도 완벽하게 동기화
+                if (localUpdates.check !== undefined) {
+                    localUpdates.check_status = localUpdates.check ? 1 : 0;
                 }
-                renderTable();
-            } catch (e) {
-                showToast("업데이트 실패: API 통신 오류", true);
+                entries[entryIndex] = { ...entries[entryIndex], ...localUpdates };
             }
+            
+            // 2. 데이터가 수정되었으니 즉시 탭 이동 및 렌더링 갱신!
+            renderTable();
+
+            // 3. 백그라운드에서 조용히 서버(D1)로 업데이트 요청 전송
+            return fetch('/api?action=updateEntry', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id, updates: updates })
+            }).catch(e => {
+                showToast("업데이트 실패: API 통신 오류", true);
+            });
         }
 
         function formatCode3(code) {
@@ -839,6 +841,12 @@
             elAppSec.classList.add('hidden');
             elLoginSec.classList.remove('hidden');
             elRegSec.classList.add('hidden');
+            
+            // 🌟 로그아웃 시 자동 새로고침 중지
+            if (autoRefreshTimer) {
+                clearInterval(autoRefreshTimer);
+                autoRefreshTimer = null;
+            }
         }
 
         async function registerPin() {
@@ -872,6 +880,13 @@
             document.getElementById('welcome-msg').innerHTML = `✅ 인증 완료! 환영합니다, <strong>${currentUser}</strong>님`;
             document.getElementById('i-reg').value = currentUser;
             renderTable();
+
+            // 🌟 접속 시 15초 단위 백그라운드 실시간 동기화 시작 (토스트 알림 없이 조용히)
+            if (!autoRefreshTimer) {
+                autoRefreshTimer = setInterval(() => {
+                    loadAllData(true); 
+                }, 15000);
+            }
         }
 
         function addRow() {
