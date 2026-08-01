@@ -19,23 +19,19 @@ export async function onRequest(context) {
     }
 
     try {
-        // DB 연결 확인 (Pages bindings에 지정된 D1 데이터베이스 이름 사용)
+        // DB 연결 확인
         const db = env.DB;
         if (!db) {
             return new Response(
-                JSON.stringify({ error: "D1 데이터베이스 바인딩(DB)을 찾을 수 없습니다." }), 
+                JSON.stringify({ error: "D1 데이터베이스 바인딩(DB)을 찾을 수 없습니다." }),
                 { status: 500, headers: corsHeaders }
             );
         }
 
-        // =========================================================================
-        // 1. 전체 데이터 및 업로드 일시 조회 (getAll) - 🌟 안정성 대폭 강화
-        // =========================================================================
         if (action === "getAll") {
-            // 기본 빈 배열 세팅
             let entries=[], products=[], vendors=[], suppliers=[], managers=[], outofstock=[], pins=[], metadata=[];
 
-            // 각 테이블별로 안전하게 개별 조회 (테이블이 없어도 서버가 죽지 않고 빈 배열 반환)
+            // 에러 방어 로직이 적용된 개별 데이터 조회
             try { entries = (await db.prepare("SELECT * FROM entries ORDER BY id DESC").all()).results; } catch(e) {}
             try { products = (await db.prepare("SELECT * FROM products").all()).results; } catch(e) {}
             try { vendors = (await db.prepare("SELECT * FROM vendors").all()).results; } catch(e) {}
@@ -45,7 +41,6 @@ export async function onRequest(context) {
             try { pins = (await db.prepare("SELECT * FROM pins").all()).results; } catch(e) {}
             try { metadata = (await db.prepare("SELECT * FROM upload_metadata").all()).results; } catch(e) {}
 
-            // uploadDates 가공
             const uploadDatesMap = {};
             if (metadata && metadata.length > 0) {
                 metadata.forEach(row => {
@@ -59,26 +54,22 @@ export async function onRequest(context) {
                 vendors: vendors || [],
                 suppliers: suppliers || [],
                 managers: managers || [],
-                outofstock: outofstock || [], 
+                outofstock: outofstock || [],
                 pins: pins || [],
-                uploadDates: uploadDatesMap 
+                uploadDates: uploadDatesMap
             }), { headers: corsHeaders });
         }
 
-        // =========================================================================
-        // 2. 기초데이터 엑셀 업로드 (uploadMaster)
-        // =========================================================================
         if (action === "uploadMaster" && request.method === "POST") {
             const { table, rows, uploadDate } = await request.json();
 
             if (!table || !Array.isArray(rows)) {
                 return new Response(
-                    JSON.stringify({ error: "잘못된 요청 형식입니다." }), 
+                    JSON.stringify({ error: "잘못된 요청 형식입니다." }),
                     { status: 400, headers: corsHeaders }
                 );
             }
 
-            // 품절 테이블이 없다면 안전하게 자동 생성
             if (table === "outofstock") {
                 await db.prepare(`
                     CREATE TABLE IF NOT EXISTS outofstock (
@@ -92,48 +83,43 @@ export async function onRequest(context) {
                 `).run();
             }
 
-            // A. 기존 테이블 데이터 삭제 (덮어쓰기)
             await db.prepare(`DELETE FROM ${table}`).run();
 
-            // B. 신규 데이터 대량 삽입 (Batch Insert)
             if (rows.length > 0) {
                 let statements = [];
-
                 if (table === "products") {
-                    statements = rows.map(r => 
+                    statements = rows.map(r =>
                         db.prepare("INSERT INTO products (code, name, spec, seller) VALUES (?, ?, ?, ?)")
                           .bind(r.code, r.name, r.spec, r.seller)
                     );
                 } else if (table === "vendors") {
-                    statements = rows.map(r => 
+                    statements = rows.map(r =>
                         db.prepare("INSERT INTO vendors (code, name, region, address, center) VALUES (?, ?, ?, ?, ?)")
                           .bind(r.code, r.name, r.region, r.address, r.center)
                     );
                 } else if (table === "suppliers") {
-                    statements = rows.map(r => 
+                    statements = rows.map(r =>
                         db.prepare("INSERT INTO suppliers (code, name) VALUES (?, ?)")
                           .bind(r.code, r.name)
                     );
                 } else if (table === "managers") {
-                    statements = rows.map(r => 
+                    statements = rows.map(r =>
                         db.prepare("INSERT INTO managers (code, name) VALUES (?, ?)")
                           .bind(r.code, r.name)
                     );
                 } else if (table === "outofstock") {
-                    statements = rows.map(r => 
+                    statements = rows.map(r =>
                         db.prepare("INSERT INTO outofstock (code, name, spec, status, schedule, remark) VALUES (?, ?, ?, ?, ?, ?)")
                           .bind(r.code, r.name, r.spec, r.status, r.schedule, r.remark)
                     );
                 }
 
-                // D1 batch 실행 (최대 100~500개 단위 분할 처리 권장)
                 const chunkSize = 100;
                 for (let i = 0; i < statements.length; i += chunkSize) {
                     await db.batch(statements.slice(i, i + chunkSize));
                 }
             }
 
-            // C. 업로드 날짜를 upload_metadata 테이블에 저장/업데이트
             if (uploadDate) {
                 await db.prepare(`
                     CREATE TABLE IF NOT EXISTS upload_metadata (
@@ -143,7 +129,7 @@ export async function onRequest(context) {
                 `).run();
 
                 await db.prepare(`
-                    INSERT INTO upload_metadata (table_name, last_upload_date) 
+                    INSERT INTO upload_metadata (table_name, last_upload_date)
                     VALUES (?, ?)
                     ON CONFLICT(table_name) DO UPDATE SET last_upload_date = excluded.last_upload_date
                 `).bind(table, uploadDate).run();
@@ -152,37 +138,29 @@ export async function onRequest(context) {
             return new Response(JSON.stringify({ success: true, count: rows.length }), { headers: corsHeaders });
         }
 
-        // =========================================================================
-        // 3. 신규 발주 추가 (addEntry)
-        // =========================================================================
         if (action === "addEntry" && request.method === "POST") {
             const e = await request.json();
-            
             await db.prepare(`
                 INSERT INTO entries (
-                    id, del, check_status, recv, pCode, pName, pSpec, qty, 
-                    vCode, vName, center, reg, regReason, date, 
+                    id, del, check_status, recv, pCode, pName, pSpec, qty,
+                    vCode, vName, center, reg, regReason, date,
                     supplierName, managerName, comp, compReasonSel, compReasonTxt
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `).bind(
-                e.id, 
-                e.del ? 1 : 0, 
-                e.check ? 1 : 0, 
-                e.recv ? 1 : 0, 
-                e.pCode, e.pName, e.pSpec, e.qty, 
-                e.vCode, e.vName, e.center, e.reg, e.regReason, e.dateStr, 
+                e.id,
+                e.del ? 1 : 0,
+                e.check ? 1 : 0,
+                e.recv ? 1 : 0,
+                e.pCode, e.pName, e.pSpec, e.qty,
+                e.vCode, e.vName, e.center, e.reg, e.regReason, e.dateStr,
                 e.supplierName, e.managerName, e.comp || "", e.compReasonSel || "", e.compReasonTxt || ""
             ).run();
 
             return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
         }
 
-        // =========================================================================
-        // 4. 발주 상태 수정 (updateEntry)
-        // =========================================================================
         if (action === "updateEntry" && request.method === "POST") {
             const { id, updates } = await request.json();
-            
             let fields = [];
             let values = [];
 
@@ -202,9 +180,6 @@ export async function onRequest(context) {
             return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
         }
 
-        // =========================================================================
-        // 5. PIN 등록 및 관리 (addPin, deletePin)
-        // =========================================================================
         if (action === "addPin" && request.method === "POST") {
             const { pin, name, approved } = await request.json();
             await db.prepare(`
@@ -221,9 +196,6 @@ export async function onRequest(context) {
             return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
         }
 
-        // =========================================================================
-        // 6. 전체 초기화 (clearAllEntries, clearOutOfStock, clearAllPins)
-        // =========================================================================
         if (action === "clearAllEntries" && request.method === "POST") {
             await db.prepare("DELETE FROM entries").run();
             return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
@@ -244,7 +216,7 @@ export async function onRequest(context) {
 
     } catch (error) {
         return new Response(
-            JSON.stringify({ error: error.message || "서버 내부 오류가 발생했습니다." }), 
+            JSON.stringify({ error: error.message || "서버 내부 오류가 발생했습니다." }),
             { status: 500, headers: corsHeaders }
         );
     }
