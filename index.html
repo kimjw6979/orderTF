@@ -1632,11 +1632,21 @@
                         }
                     });
 
-                    if (tableName === 'products' || tableName === 'outofstock') {
+                    if (tableName === 'products') {
                         const uniqueMap = new Map();
                         rows.forEach(r => {
                             if(r.code !== '000000') {
                                 uniqueMap.set(r.code, r);
+                            }
+                        });
+                        rows = Array.from(uniqueMap.values());
+                    } else if (tableName === 'outofstock') {
+                        // 규격별로 각각 독립된 품절 상태를 유지할 수 있도록 코드+규격 조합을 키로 중복 제거
+                        const uniqueMap = new Map();
+                        rows.forEach(r => {
+                            if(r.code !== '000000') {
+                                const compositeKey = `${r.code}_${r.spec}`;
+                                uniqueMap.set(compositeKey, r);
                             }
                         });
                         rows = Array.from(uniqueMap.values());
@@ -1828,8 +1838,8 @@
                         }
                     }
 
-                    // 🌟 품절 또는 중단 상태 판별 및 배지 처리 (코드 및 규격 줄바꿈 반영)
-                    const oosItem = outOfStockData.find(o => o.code === item.code || (o.name && o.name === item.name));
+                    // 🌟 규격별(고유 코드 기준) 개별 품절/중단 여부 판별
+                    const oosItem = outOfStockData.find(o => o.code === item.code);
                     let oosBadge = "";
                     let oosInfo = "";
                     if (oosItem) {
@@ -1853,7 +1863,7 @@
                 (item) => { 
                     document.getElementById('i-prod').value = `${item.code} ${item.name}`; 
                     
-                    const oosItem = outOfStockData.find(o => o.code === item.code || (o.name && o.name === item.name));
+                    const oosItem = outOfStockData.find(o => o.code === item.code);
                     const addBtn = document.getElementById('btn-add');
                     if (oosItem) {
                         selectedProductIsOOS = true;
