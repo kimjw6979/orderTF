@@ -138,7 +138,7 @@
             border-color: var(--primary); 
         }
         
-        /* 🌟 기초데이터 엑셀 업로드 영역 카드 스타일 */
+        /* 기초데이터 엑셀 업로드 영역 카드 스타일 */
         .upload-card { 
             background: #ffffff; 
             border: 1px solid var(--border); 
@@ -402,7 +402,6 @@
         .text-small { 
             color: #888; 
             font-size: 12px; 
-            margin-left: 8px; 
         }
 
         /* 모바일 반응형 디자인 */
@@ -489,7 +488,7 @@
                 <button class="secondary btn-upload" onclick="uploadExcel('vendors', 'file-vendors')" id="btn-upload-vend">매출처 데이터 덮어쓰기</button>
             </div>
 
-            <!-- 🌟 품절 관리 품목 카드 (신규 추가) -->
+            <!-- 품절 관리 품목 카드 -->
             <div class="upload-card">
                 <div class="upload-card-header">
                     <span class="upload-title">🚨 품절 관리 품목</span>
@@ -698,7 +697,7 @@
         let productsData = [];
         let suppliersData = [];
         let managersData = [];
-        let outOfStockData = []; // 🌟 품절 관리 품목 배열 추가
+        let outOfStockData = []; 
         let entries = [];
         let pins = [];
         
@@ -707,7 +706,7 @@
         let currentPage = 1;
         let autoRefreshTimer = null; 
         
-        let selectedProductIsOOS = false; // 🌟 선택한 상품 품절 여부 플래그
+        let selectedProductIsOOS = false; 
         
         const ADMIN_PW = "04017";
         const AUTHORIZED_USERS = ['김현중', '김정욱', '박형삼', '박지영', '권은숙', '최유리', '송요운'];
@@ -737,7 +736,7 @@
                 vendorsData = data.vendors || [];
                 suppliersData = data.suppliers || [];
                 managersData = data.managers || [];
-                outOfStockData = data.outofstock || []; // 🌟 품절 데이터 로드
+                outOfStockData = data.outofstock || []; 
                 pins = data.pins || [];
                 entries = data.entries || [];
                 
@@ -888,9 +887,8 @@
         }
 
         function addRow() {
-            // 🌟 품절 품목 체크
             if (selectedProductIsOOS) {
-                showToast("🚨 품절된 품목은 신규 발주를 추가할 수 없습니다.", true);
+                showToast("🚨 품절 또는 판매중단된 품목은 신규 발주를 추가할 수 없습니다.", true);
                 return;
             }
 
@@ -1619,7 +1617,6 @@
                                 });
                             }
                         }
-                        // 🌟 품절 관리 품목 엑셀 파싱 (제품코드, 제품명, 규격, 품절여부, 해지일정여부, 비고)
                         if (tableName === 'outofstock') {
                             const code = r['코드'] || r['제품코드'] || r['상품코드'];
                             if (code) {
@@ -1688,7 +1685,6 @@
             let currentFocus = -1;
 
             input.addEventListener('input', function() {
-                // 🌟 상품 검색 입력 시 품절 차단 플래그 초기화
                 if (inputId === 'i-prod') {
                     selectedProductIsOOS = false;
                     const addBtn = document.getElementById('btn-add');
@@ -1832,33 +1828,40 @@
                         }
                     }
 
-                    // 🌟 품절 관리 품목 여부 실시간 확인 및 디자인 적용
+                    // 🌟 품절 또는 중단 상태 판별 및 배지 처리 (코드 및 규격 줄바꿈 반영)
                     const oosItem = outOfStockData.find(o => o.code === item.code || (o.name && o.name === item.name));
                     let oosBadge = "";
                     let oosInfo = "";
                     if (oosItem) {
-                        oosBadge = `<span style="color:#ff4b4b; font-weight:bold;">[🔴 품절]</span> `;
-                        oosInfo = `<br><span style="color:#ff4b4b; font-size:11px; font-weight:600;">🚨 품절상태 | 해지일정: ${oosItem.schedule || '미정'} | 비고: ${oosItem.remark || '-'}</span>`;
+                        const rawStatus = (oosItem.status || "품절").trim();
+                        if (rawStatus.includes("중단")) {
+                            oosBadge = `<span style="color:#555; font-weight:bold;">[⚫ 중단]</span> `;
+                            oosInfo = `<br><span style="color:#555; font-size:11px; font-weight:600;">🚫 판매중단 상태 | 해지일정: ${oosItem.schedule || '해당없음'} | 비고: ${oosItem.remark || '-'}</span>`;
+                        } else {
+                            oosBadge = `<span style="color:#ff4b4b; font-weight:bold;">[🔴 품절]</span> `;
+                            oosInfo = `<br><span style="color:#ff4b4b; font-size:11px; font-weight:600;">🚨 품절상태 | 해지일정: ${oosItem.schedule || '미정'} | 비고: ${oosItem.remark || '-'}</span>`;
+                        }
                     }
 
-                    return `<div style="padding: 2px 0; line-height: 1.4;">
-                                ${oosBadge}<strong>${item.name}</strong> <span class="text-small">${item.code} | ${item.spec}</span><br>
-                                <span style="font-size: 11px; color: #0066cc; font-weight:500;">🏢 ${sName} &nbsp;|&nbsp; 👨‍💼 ${mName}</span>
+                    return `<div style="padding: 4px 0; line-height: 1.5;">
+                                <div>${oosBadge}<strong>${item.name}</strong></div>
+                                <div style="font-size: 12px; color: #555;">코드: ${item.code} &nbsp;|&nbsp; 규격: ${item.spec || '-'}</div>
+                                <div style="font-size: 11px; color: #0066cc; font-weight:500;">🏢 ${sName} &nbsp;|&nbsp; 👨‍💼 ${mName}</div>
                                 ${oosInfo}
                             </div>`;
                 },
                 (item) => { 
                     document.getElementById('i-prod').value = `${item.code} ${item.name}`; 
                     
-                    // 🌟 품절 상품 선택 시 등록 차단 및 경고 토스트 발생
                     const oosItem = outOfStockData.find(o => o.code === item.code || (o.name && o.name === item.name));
                     const addBtn = document.getElementById('btn-add');
                     if (oosItem) {
                         selectedProductIsOOS = true;
-                        showToast(`🚨 [등록 불가] 선택하신 품목은 현재 품절 상태입니다! (해지일정: ${oosItem.schedule || '미정'})`, true);
+                        const rawStatus = (oosItem.status || "품절").trim();
+                        showToast(`🚨 [등록 불가] 선택하신 품목은 현재 ${rawStatus} 상태입니다! (해지일정: ${oosItem.schedule || '미정'})`, true);
                         addBtn.disabled = true;
                         addBtn.style.backgroundColor = '#ccc';
-                        addBtn.innerText = '🚫 품절 품목 (등록 불가)';
+                        addBtn.innerText = `🚫 ${rawStatus} 품목 (등록 불가)`;
                     } else {
                         selectedProductIsOOS = false;
                         addBtn.disabled = false;
