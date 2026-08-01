@@ -1,4 +1,4 @@
-// Cloudflare Pages Functions 백엔드 API (D1 연동)
+// Cloudflare Pages Functions 백엔nd API (D1 연동)
 
 export async function onRequest(context) {
     const { request, env } = context;
@@ -32,15 +32,15 @@ export async function onRequest(context) {
         // 1. 전체 데이터 및 업로드 일시 조회 (getAll)
         // =========================================================================
         if (action === "getAll") {
-            // 각 테이블 데이터 병렬 조회
-            const [entries, products, vendors, suppliers, managers, pins, metadata] = await Promise.all([
+            // 각 테이블 데이터 병렬 조회 (🌟 outofstock 테이블 추가)
+            const [entries, products, vendors, suppliers, managers, outofstock, pins, metadata] = await Promise.all([
                 db.prepare("SELECT * FROM entries ORDER BY id DESC").all(),
                 db.prepare("SELECT * FROM products").all(),
                 db.prepare("SELECT * FROM vendors").all(),
                 db.prepare("SELECT * FROM suppliers").all(),
                 db.prepare("SELECT * FROM managers").all(),
+                db.prepare("SELECT * FROM outofstock").all().catch(() => ({ results: [] })), // 🌟 품절 테이블 조회 (테이블 미생성 시 에러 방지)
                 db.prepare("SELECT * FROM pins").all(),
-                // 🌟 업로드 일시 metadata 테이블 조회 (없으면 예외 방지용 catch 처리)
                 db.prepare("SELECT * FROM upload_metadata").all().catch(() => ({ results: [] }))
             ]);
 
@@ -58,8 +58,9 @@ export async function onRequest(context) {
                 vendors: vendors.results || [],
                 suppliers: suppliers.results || [],
                 managers: managers.results || [],
+                outofstock: outofstock.results || [], // 🌟 프론트엔드로 품절 데이터 전달
                 pins: pins.results || [],
-                uploadDates: uploadDatesMap // 👈 프론트엔드로 전달되는 업로드 일시 객체
+                uploadDates: uploadDatesMap 
             }), { headers: corsHeaders });
         }
 
@@ -74,6 +75,20 @@ export async function onRequest(context) {
                     JSON.stringify({ error: "잘못된 요청 형식입니다." }), 
                     { status: 400, headers: corsHeaders }
                 );
+            }
+
+            // 🌟 만약 outofstock 테이블이 아직 생성되지 않았다면 안전하게 자동 생성
+            if (table === "outofstock") {
+                await db.prepare(`
+                    CREATE TABLE IF NOT EXISTS outofstock (
+                        code TEXT,
+                        name TEXT,
+                        spec TEXT,
+                        status TEXT,
+                        schedule TEXT,
+                        remark TEXT
+                    )
+                `).run();
             }
 
             // A. 기존 테이블 데이터 삭제 (덮어쓰기)
@@ -103,6 +118,12 @@ export async function onRequest(context) {
                         db.prepare("INSERT INTO managers (code, name) VALUES (?, ?)")
                           .bind(r.code, r.name)
                     );
+                } else if (table === "outofstock") {
+                    // 🌟 품절 관리 품목 대량 삽입 쿼리
+                    statements = rows.map(r => 
+                        db.prepare("INSERT INTO outofstock (code, name, spec, status, schedule, remark) VALUES (?, ?, ?, ?, ?, ?)")
+                          .bind(r.code, r.name, r.spec, r.status, r.schedule, r.remark)
+                    );
                 }
 
                 // D1 batch 실행 (최대 100~500개 단위 분할 처리 권장)
@@ -112,9 +133,8 @@ export async function onRequest(context) {
                 }
             }
 
-            // C. 🌟 업로드 날짜를 upload_metadata 테이블에 저장/업데이트 (UPSERT)
+            // C. 업로드 날짜를 upload_metadata 테이블에 저장/업데이트 (UPSERT)
             if (uploadDate) {
-                // 테이블이 없으면 자동 생성
                 await db.prepare(`
                     CREATE TABLE IF NOT EXISTS upload_metadata (
                         table_name TEXT PRIMARY KEY,
@@ -122,7 +142,6 @@ export async function onRequest(context) {
                     )
                 `).run();
 
-                // 날짜 정보 저장
                 await db.prepare(`
                     INSERT INTO upload_metadata (table_name, last_upload_date) 
                     VALUES (?, ?)
@@ -203,10 +222,18 @@ export async function onRequest(context) {
         }
 
         // =========================================================================
-        // 6. 전체 초기화 (clearAllEntries, clearAllPins)
+        // 6. 전체 초기화 (clearAllEntries, clearOutOfStock, clearAllPins)
         // =========================================================================
         if (action === "clearAllEntries" && request.method === "POST") {
             await db.prepare("DELETE FROM entries").run();
+            return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
+        }
+
+        // 🌟 품절 관리 품목 개별 초기화 액션 추가
+        if (action === "clearOutOfStock" && request.method === "POST") {
+            await db.prepare("DELETE FROM outofstock").run();
+            // 업로드 메타데이터에서도 품절 관련 기록 삭제
+            await db.prepare("DELETE FROM upload_metadata WHERE table_name = 'outofstock'").run().catch(() => {});
             return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
         }
 
