@@ -1,4 +1,4 @@
-// Cloudflare Pages Functions 백엔nd API (D1 연동)
+// Cloudflare Pages Functions 백엔드 API (D1 연동)
 
 export async function onRequest(context) {
     const { request, env } = context;
@@ -19,7 +19,7 @@ export async function onRequest(context) {
     }
 
     try {
-        // DB 연결 확인 (Pages bindings에 지정된 D1 데이터베이스 이름 사용, 기본값 env.DB)
+        // DB 연결 확인 (Pages bindings에 지정된 D1 데이터베이스 이름 사용)
         const db = env.DB;
         if (!db) {
             return new Response(
@@ -29,37 +29,38 @@ export async function onRequest(context) {
         }
 
         // =========================================================================
-        // 1. 전체 데이터 및 업로드 일시 조회 (getAll)
+        // 1. 전체 데이터 및 업로드 일시 조회 (getAll) - 🌟 안정성 대폭 강화
         // =========================================================================
         if (action === "getAll") {
-            // 각 테이블 데이터 병렬 조회 (🌟 outofstock 테이블 추가)
-            const [entries, products, vendors, suppliers, managers, outofstock, pins, metadata] = await Promise.all([
-                db.prepare("SELECT * FROM entries ORDER BY id DESC").all(),
-                db.prepare("SELECT * FROM products").all(),
-                db.prepare("SELECT * FROM vendors").all(),
-                db.prepare("SELECT * FROM suppliers").all(),
-                db.prepare("SELECT * FROM managers").all(),
-                db.prepare("SELECT * FROM outofstock").all().catch(() => ({ results: [] })), // 🌟 품절 테이블 조회 (테이블 미생성 시 에러 방지)
-                db.prepare("SELECT * FROM pins").all(),
-                db.prepare("SELECT * FROM upload_metadata").all().catch(() => ({ results: [] }))
-            ]);
+            // 기본 빈 배열 세팅
+            let entries=[], products=[], vendors=[], suppliers=[], managers=[], outofstock=[], pins=[], metadata=[];
 
-            // upload_metadata 결과를 { products: "2026-07-31 09:36", ... } 형태의 객체로 변환
+            // 각 테이블별로 안전하게 개별 조회 (테이블이 없어도 서버가 죽지 않고 빈 배열 반환)
+            try { entries = (await db.prepare("SELECT * FROM entries ORDER BY id DESC").all()).results; } catch(e) {}
+            try { products = (await db.prepare("SELECT * FROM products").all()).results; } catch(e) {}
+            try { vendors = (await db.prepare("SELECT * FROM vendors").all()).results; } catch(e) {}
+            try { suppliers = (await db.prepare("SELECT * FROM suppliers").all()).results; } catch(e) {}
+            try { managers = (await db.prepare("SELECT * FROM managers").all()).results; } catch(e) {}
+            try { outofstock = (await db.prepare("SELECT * FROM outofstock").all()).results; } catch(e) {}
+            try { pins = (await db.prepare("SELECT * FROM pins").all()).results; } catch(e) {}
+            try { metadata = (await db.prepare("SELECT * FROM upload_metadata").all()).results; } catch(e) {}
+
+            // uploadDates 가공
             const uploadDatesMap = {};
-            if (metadata && metadata.results) {
-                metadata.results.forEach(row => {
+            if (metadata && metadata.length > 0) {
+                metadata.forEach(row => {
                     uploadDatesMap[row.table_name] = row.last_upload_date;
                 });
             }
 
             return new Response(JSON.stringify({
-                entries: entries.results || [],
-                products: products.results || [],
-                vendors: vendors.results || [],
-                suppliers: suppliers.results || [],
-                managers: managers.results || [],
-                outofstock: outofstock.results || [], // 🌟 프론트엔드로 품절 데이터 전달
-                pins: pins.results || [],
+                entries: entries || [],
+                products: products || [],
+                vendors: vendors || [],
+                suppliers: suppliers || [],
+                managers: managers || [],
+                outofstock: outofstock || [], 
+                pins: pins || [],
                 uploadDates: uploadDatesMap 
             }), { headers: corsHeaders });
         }
@@ -77,7 +78,7 @@ export async function onRequest(context) {
                 );
             }
 
-            // 🌟 만약 outofstock 테이블이 아직 생성되지 않았다면 안전하게 자동 생성
+            // 품절 테이블이 없다면 안전하게 자동 생성
             if (table === "outofstock") {
                 await db.prepare(`
                     CREATE TABLE IF NOT EXISTS outofstock (
@@ -119,7 +120,6 @@ export async function onRequest(context) {
                           .bind(r.code, r.name)
                     );
                 } else if (table === "outofstock") {
-                    // 🌟 품절 관리 품목 대량 삽입 쿼리
                     statements = rows.map(r => 
                         db.prepare("INSERT INTO outofstock (code, name, spec, status, schedule, remark) VALUES (?, ?, ?, ?, ?, ?)")
                           .bind(r.code, r.name, r.spec, r.status, r.schedule, r.remark)
@@ -133,7 +133,7 @@ export async function onRequest(context) {
                 }
             }
 
-            // C. 업로드 날짜를 upload_metadata 테이블에 저장/업데이트 (UPSERT)
+            // C. 업로드 날짜를 upload_metadata 테이블에 저장/업데이트
             if (uploadDate) {
                 await db.prepare(`
                     CREATE TABLE IF NOT EXISTS upload_metadata (
@@ -229,10 +229,8 @@ export async function onRequest(context) {
             return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
         }
 
-        // 🌟 품절 관리 품목 개별 초기화 액션 추가
         if (action === "clearOutOfStock" && request.method === "POST") {
             await db.prepare("DELETE FROM outofstock").run();
-            // 업로드 메타데이터에서도 품절 관련 기록 삭제
             await db.prepare("DELETE FROM upload_metadata WHERE table_name = 'outofstock'").run().catch(() => {});
             return new Response(JSON.stringify({ success: true }), { headers: corsHeaders });
         }
