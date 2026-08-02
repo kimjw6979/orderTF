@@ -59,6 +59,7 @@
             display: flex;
             z-index: 9000;
             transition: opacity 0.4s ease;
+            overflow-y: auto; /* 🚨 추가: 화면이 작을 때 상하 스크롤 허용 */
         }
         .login-image-side {
             flex: 1;
@@ -79,7 +80,6 @@
             top: -150px; right: -150px;
         }
         
-        /* 🚨 수정된 부분: 텍스트 스타일 및 이미지 크기 대폭 상향 */
         .login-image-side h1 {
             color: white; border: none; padding: 0; font-size: 2.8rem; justify-content: center; margin-bottom: 0.8rem; z-index: 1; font-weight: 800; letter-spacing: -0.03em;
         }
@@ -88,10 +88,10 @@
         }
         .login-image-side img {
             width: 100%;
-            max-width: 380px; /* 기존 250px에서 380px로 확대 */
-            margin-top: 3rem; /* 텍스트 아래로 배치되므로 위쪽 여백 부여 */
-            border-radius: 20px; /* 모서리 둥글게 */
-            box-shadow: var(--shadow-xl); /* 고급스러운 그림자 효과 */
+            max-width: 380px; 
+            margin-top: 3rem; 
+            border-radius: 20px; 
+            box-shadow: var(--shadow-xl); 
             z-index: 1;
             object-fit: cover;
         }
@@ -102,6 +102,7 @@
             justify-content: center;
             align-items: center;
             background: var(--sec-bg);
+            padding: 2rem; /* 추가: 스크롤 시 위아래 여백 확보 */
         }
         .login-form-container {
             background: var(--bg);
@@ -221,15 +222,17 @@
         .autocomplete-list li:hover, .autocomplete-active { background-color: var(--primary-light) !important; color: var(--primary-hover); }
         .text-small { color: var(--text-light); font-size: 0.8rem; display: block; margin-top: 4px; }
 
-        /* 모바일 반응형 디자인 (수정됨) */
+        /* 🚨 모바일 반응형 디자인 (수정됨: 여백 최적화 및 스크롤 문제 해결) */
         @media (max-width: 768px) {
-            #login-wrapper { flex-direction: column; }
-            .login-image-side { padding: 3rem 1.5rem; flex: 0 0 auto; height: auto; min-height: 300px; }
-            .login-image-side h1 { font-size: 2rem; margin-bottom: 0.5rem;}
-            .login-image-side p { font-size: 0.95rem; }
-            .login-image-side img { max-width: 200px; margin-top: 1.5rem; }
-            .login-form-side { padding: 2rem 1.5rem; align-items: flex-start; }
+            #login-wrapper { flex-direction: column; overflow-y: auto; height: 100%; position: fixed; }
+            .login-image-side { padding: 2rem 1rem; flex: 0 0 auto; height: auto; min-height: auto; } /* 여백과 최소 높이 줄임 */
+            .login-image-side h1 { font-size: 1.8rem; margin-bottom: 0.3rem;}
+            .login-image-side p { font-size: 0.9rem; }
+            .login-image-side img { max-width: 160px; margin-top: 1rem; border-radius: 12px; } /* 이미지 크기 최적화 */
+            
+            .login-form-side { padding: 1.5rem 1rem 3rem 1rem; align-items: flex-start; } /* 하단 여백 추가로 스크롤 시 공간 확보 */
             .login-form-container { box-shadow: none; border: none; background: transparent; padding: 0; max-width: 100%; }
+            .login-form-container p { margin-bottom: 1.5rem !important; }
 
             .main { padding: 1.5rem 1rem; }
             h1 { font-size: 1.4rem; flex-direction: column; align-items: flex-start; gap: 0.8rem;}
@@ -335,14 +338,14 @@
         </div>
     </div>
 
-    <!-- 🌟 수정된 로그인 화면 (텍스트 위로, 이미지 대폭 확대) -->
+    <!-- 🌟 수정된 로그인 화면 -->
     <div id="login-wrapper">
         <div class="login-image-side">
-            <!-- 텍스트 영역 먼저 배치 -->
-            <h1>티제이팜 발주 TF</h1>
-            <p>신속하고 정확한 의약품 발주 요청 시스템</p>
+            <!-- 텍스트 영역 -->
+            <h1>티제이팜 주문요청 게시판</h1>
+            <p>신속하고 정확하고 확실한 의약품 주문요청 시스템</p>
             
-            <!-- 이미지 영역 나중에 배치 -->
+            <!-- 이미지 영역 -->
             <img src="logo.png" alt="TJ Pharm Logo" onerror="this.style.display='none';">
         </div>
         
