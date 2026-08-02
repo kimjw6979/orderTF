@@ -280,7 +280,7 @@
             
             <div class="upload-card">
                 <div class="upload-card-header">
-                    <span class="upload-title">📦 상품 색인부</span>
+                    <span class="upload-title">📦 상품색인부</span>
                     <span id="date-products" style="color: var(--danger); font-size: 0.85rem; font-weight: 600;"></span>
                 </div>
                 <input type="file" id="file-products" accept=".xlsx, .xls" class="file-input">
@@ -289,7 +289,7 @@
 
             <div class="upload-card">
                 <div class="upload-card-header">
-                    <span class="upload-title">🏢 매입처 색인부</span>
+                    <span class="upload-title">🏢 매입처색인부</span>
                     <span id="date-suppliers" style="color: var(--danger); font-size: 0.85rem; font-weight: 600;"></span>
                 </div>
                 <input type="file" id="file-suppliers" accept=".xlsx, .xls" class="file-input">
@@ -298,7 +298,7 @@
 
             <div class="upload-card">
                 <div class="upload-card-header">
-                    <span class="upload-title">👨‍💼 제약사별 담당자</span>
+                    <span class="upload-title">👨‍💼 제약사별담당자</span>
                     <span id="date-managers" style="color: var(--danger); font-size: 0.85rem; font-weight: 600;"></span>
                 </div>
                 <input type="file" id="file-managers" accept=".xlsx, .xls" class="file-input">
@@ -307,7 +307,7 @@
 
             <div class="upload-card">
                 <div class="upload-card-header">
-                    <span class="upload-title">🏪 매출처 색인부</span>
+                    <span class="upload-title">🏪 매출처색인부</span>
                     <span id="date-vendors" style="color: var(--danger); font-size: 0.85rem; font-weight: 600;"></span>
                 </div>
                 <input type="file" id="file-vendors" accept=".xlsx, .xls" class="file-input">
@@ -316,7 +316,7 @@
 
             <div class="upload-card">
                 <div class="upload-card-header">
-                    <span class="upload-title">🚨 품절 관리 품목</span>
+                    <span class="upload-title">🚨 품절관리품목</span>
                     <span id="date-outofstock" style="color: var(--danger); font-size: 0.85rem; font-weight: 600;"></span>
                 </div>
                 <input type="file" id="file-outofstock" accept=".xlsx, .xls" class="file-input">
@@ -343,7 +343,7 @@
         <div class="login-image-side">
             <!-- 텍스트 영역 -->
             <h1>TJPHARM Order Desk </h1>
-            <p>신속하고 정확한 의약품 주문 요청 시스템</p>
+            <p>신속하고 정확한 의약품 주문요청 시스템</p>
             
             <!-- 이미지 영역 -->
             <img src="logo.png" alt="TJ Pharm Logo" onerror="this.style.display='none';">
@@ -362,7 +362,10 @@
                         <p style="color: var(--text);">👋 처음 입력하신 PIN 번호입니다.<br>연결할 <strong>본인의 이름</strong>을 등록해주세요.<br><span style="font-size:0.85rem; color:var(--danger); margin-top:0.5rem; display:inline-block;">※ 관리자 승인 후 접속 가능</span></p>
                     </div>
                     <input type="text" id="user-name" placeholder="등록자/답변자 이름 입력 (예: 김정욱)">
-                    <button onclick="registerPin()" style="border-radius: 12px;">승인 요청하기</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="cancelRegister()" class="secondary" style="border-radius: 12px;">취소</button>
+                        <button onclick="registerPin()" style="border-radius: 12px; background-color: #F97316; color: white;">승인 요청하기</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -371,7 +374,7 @@
     <!-- 메인 화면 -->
     <div class="main hidden" id="app-section">
         <h1>
-            <span>📋 티제이팜 주문요청 게시판 <span style="font-size: 1rem; font-weight: normal; color: var(--primary);">[Cloudflare D1 🟢]</span></span>
+            <span>📋 티제이팜 주문요청 게시판 <span style="font-size: 1rem; font-weight: normal; color: var(--primary);">[Cloudflare D1 연결 🟢]</span></span>
             <button onclick="loadAllData()" class="secondary" style="width:auto; padding:0.6rem 1.2rem; font-size:0.9rem;">🔄 새로고침</button>
         </h1>
         
@@ -507,7 +510,7 @@
                         <th style="min-width: 120px;">거래처명</th>
                         <th style="white-space: nowrap;">센터</th>
                         <th style="white-space: nowrap;">등록자</th>
-                        <th style="min-width: 100px;">등록 사유</th>
+                        <th style="min-width: 100px;">등록사유</th>
                         <th style="white-space: nowrap;">등록일시</th>
                         <th style="white-space: nowrap;">담당자<br>답변자</th>
                         <th style="min-width: 160px;">비고(사유)</th>
@@ -719,6 +722,13 @@
             }
         }
 
+        // 등록 취소 버튼 동작
+        function cancelRegister() {
+            document.getElementById('user-pin').value = "";
+            document.getElementById('user-name').value = "";
+            document.getElementById('register-section').classList.add('hidden');
+        }
+
         function showApp() {
             elLoginWrapper.style.opacity = '0';
             
@@ -747,7 +757,7 @@
 
         function addRow() {
             if (selectedProductIsOOS) {
-                showToast("🚨 품절 또는 판매중단된 품목은 신규 주문를 추가할 수 없습니다.", true);
+                showToast("🚨 품절 또는 판매중단된 품목은 신규 주문을 추가할 수 없습니다.", true);
                 return;
             }
 
@@ -1382,7 +1392,7 @@
             else if (filter === 'recv') filterName = "입고완료";
             else if (filter === 'del') filterName = "삭제내역";
             
-            XLSX.writeFile(workbook, `TJPHARM_주문TF_주문내역_${filterName}_${dateString}.xlsx`);
+            XLSX.writeFile(workbook, `TJPHARM_발주TF_주문내역_${filterName}_${dateString}.xlsx`);
         }
 
         function showToast(msg, isError=false) {
