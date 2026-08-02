@@ -31,6 +31,7 @@
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.15), 0 8px 10px -6px rgb(0 0 0 / 0.1);
         }
 
         body { 
@@ -61,7 +62,7 @@
         }
         .login-image-side {
             flex: 1;
-            background: linear-gradient(135deg, #1E3A8A 0%, var(--primary) 100%);
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -73,20 +74,26 @@
             overflow: hidden;
         }
         .login-image-side::after {
-            content: ''; position: absolute; width: 600px; height: 600px;
-            background: rgba(255,255,255,0.05); border-radius: 50%;
-            top: -100px; right: -100px;
+            content: ''; position: absolute; width: 800px; height: 800px;
+            background: rgba(255,255,255,0.06); border-radius: 50%;
+            top: -150px; right: -150px;
         }
-        .login-image-side img {
-            max-width: 250px;
-            margin-bottom: 2rem;
-            z-index: 1;
-        }
+        
+        /* 🚨 수정된 부분: 텍스트 스타일 및 이미지 크기 대폭 상향 */
         .login-image-side h1 {
-            color: white; border: none; padding: 0; font-size: 2.5rem; justify-content: center; margin-bottom: 1rem; z-index: 1;
+            color: white; border: none; padding: 0; font-size: 2.8rem; justify-content: center; margin-bottom: 0.8rem; z-index: 1; font-weight: 800; letter-spacing: -0.03em;
         }
         .login-image-side p {
-            color: rgba(255,255,255,0.8); font-size: 1.1rem; z-index: 1;
+            color: rgba(255,255,255,0.9); font-size: 1.15rem; z-index: 1; margin: 0; font-weight: 400; letter-spacing: -0.02em;
+        }
+        .login-image-side img {
+            width: 100%;
+            max-width: 380px; /* 기존 250px에서 380px로 확대 */
+            margin-top: 3rem; /* 텍스트 아래로 배치되므로 위쪽 여백 부여 */
+            border-radius: 20px; /* 모서리 둥글게 */
+            box-shadow: var(--shadow-xl); /* 고급스러운 그림자 효과 */
+            z-index: 1;
+            object-fit: cover;
         }
         
         .login-form-side {
@@ -98,8 +105,8 @@
         }
         .login-form-container {
             background: var(--bg);
-            padding: 4rem 3rem;
-            border-radius: var(--radius-lg);
+            padding: 4.5rem 3.5rem;
+            border-radius: 24px;
             box-shadow: var(--shadow-lg);
             border: 1px solid var(--border);
             width: 100%;
@@ -125,16 +132,16 @@
         
         /* Form Elements */
         input, select { 
-            width: 100%; padding: 0.8rem 1rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); 
-            box-sizing: border-box; font-size: 0.95rem; background-color: var(--bg); transition: all 0.2s ease; box-shadow: var(--shadow-sm); color: var(--text); font-family: inherit;
+            width: 100%; padding: 0.9rem 1rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); 
+            box-sizing: border-box; font-size: 1rem; background-color: var(--bg); transition: all 0.2s ease; box-shadow: var(--shadow-sm); color: var(--text); font-family: inherit;
         }
         input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-border); }
         input::placeholder { color: #94A3B8; }
         
         /* Buttons */
         button { 
-            width: 100%; padding: 0.8rem 1rem; background-color: var(--primary); color: white; border: none; border-radius: var(--radius-md); 
-            cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow-sm);
+            width: 100%; padding: 0.9rem 1rem; background-color: var(--primary); color: white; border: none; border-radius: var(--radius-md); 
+            cursor: pointer; font-size: 1rem; font-weight: 600; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow-sm);
         }
         button:hover { background-color: var(--primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
         button:active { transform: translateY(0); box-shadow: none; }
@@ -214,14 +221,14 @@
         .autocomplete-list li:hover, .autocomplete-active { background-color: var(--primary-light) !important; color: var(--primary-hover); }
         .text-small { color: var(--text-light); font-size: 0.8rem; display: block; margin-top: 4px; }
 
-        /* 모바일 반응형 디자인 */
+        /* 모바일 반응형 디자인 (수정됨) */
         @media (max-width: 768px) {
             #login-wrapper { flex-direction: column; }
-            .login-image-side { padding: 2rem 1rem; flex: 0 0 auto; height: 180px; }
-            .login-image-side h1 { font-size: 1.5rem; margin-bottom: 0.5rem;}
-            .login-image-side p { font-size: 0.9rem; }
-            .login-image-side img { max-width: 120px; margin-bottom: 1rem; }
-            .login-form-side { padding: 2rem 1rem; align-items: flex-start; }
+            .login-image-side { padding: 3rem 1.5rem; flex: 0 0 auto; height: auto; min-height: 300px; }
+            .login-image-side h1 { font-size: 2rem; margin-bottom: 0.5rem;}
+            .login-image-side p { font-size: 0.95rem; }
+            .login-image-side img { max-width: 200px; margin-top: 1.5rem; }
+            .login-form-side { padding: 2rem 1.5rem; align-items: flex-start; }
             .login-form-container { box-shadow: none; border: none; background: transparent; padding: 0; max-width: 100%; }
 
             .main { padding: 1.5rem 1rem; }
@@ -328,27 +335,31 @@
         </div>
     </div>
 
-    <!-- 🌟 새롭게 적용된 로그인 화면 (Split Screen) -->
+    <!-- 🌟 수정된 로그인 화면 (텍스트 위로, 이미지 대폭 확대) -->
     <div id="login-wrapper">
         <div class="login-image-side">
-            <img src="logo.png" alt="TJ Pharm Logo" onerror="this.style.display='none';">
+            <!-- 텍스트 영역 먼저 배치 -->
             <h1>티제이팜 발주 TF</h1>
             <p>신속하고 정확한 의약품 발주 요청 시스템</p>
+            
+            <!-- 이미지 영역 나중에 배치 -->
+            <img src="logo.png" alt="TJ Pharm Logo" onerror="this.style.display='none';">
         </div>
+        
         <div class="login-form-side">
             <div class="login-form-container">
                 <h3 style="font-size:1.5rem; margin-bottom:0.5rem;">🔐 접속하기</h3>
-                <p style="margin-bottom: 2rem;">개인 접속 PIN <strong>4자리(숫자)</strong>를 입력하세요.</p>
+                <p style="margin-bottom: 2.5rem; color: var(--text-light);">개인 접속 PIN <strong>4자리(숫자)</strong>를 입력하세요.</p>
                 
-                <input type="password" id="user-pin" placeholder="예: 1234" maxlength="4" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem; margin-bottom: 1.5rem; padding: 1rem;">
-                <button onclick="login()" style="padding: 1rem; font-size: 1.1rem;">시스템 입장</button>
+                <input type="password" id="user-pin" placeholder="예 : 1 2 3 4" maxlength="4" style="text-align: center; font-size: 1.2rem; letter-spacing: 0.8rem; margin-bottom: 1.5rem; padding: 1rem;">
+                <button onclick="login()" style="padding: 1rem; font-size: 1.1rem; border-radius: 12px;">시스템 입장</button>
                 
                 <div id="register-section" class="hidden" style="margin-top: 2.5rem; text-align: left;">
-                    <div class="info-box" style="border-radius: var(--radius-md); border-left: none; background: #F8FAFC; border: 1px solid var(--border); padding: 1rem;">
+                    <div class="info-box" style="border-radius: var(--radius-md); border-left: none; background: #F8FAFC; border: 1px solid var(--border); padding: 1.2rem;">
                         <p style="color: var(--text);">👋 처음 입력하신 PIN 번호입니다.<br>연결할 <strong>본인의 이름</strong>을 등록해주세요.<br><span style="font-size:0.85rem; color:var(--danger); margin-top:0.5rem; display:inline-block;">※ 관리자 승인 후 접속 가능</span></p>
                     </div>
                     <input type="text" id="user-name" placeholder="등록자/답변자 이름 입력 (예: 김정욱)">
-                    <button onclick="registerPin()">승인 요청하기</button>
+                    <button onclick="registerPin()" style="border-radius: 12px;">승인 요청하기</button>
                 </div>
             </div>
         </div>
@@ -543,10 +554,8 @@
 
         const isTrue = (val) => val === 1 || val === true || val === 'true';
 
-        // 🌟 수정된 로드 이벤트 (스플래시 제거 및 즉시 데이터 로드)
         window.addEventListener('load', () => {
             loadAllData(true); 
-            // 시작 시 PIN 입력칸에 자동으로 포커스
             const pinInput = document.getElementById('user-pin');
             if (pinInput) pinInput.focus();
         });
@@ -630,7 +639,6 @@
             return name.replace(/\(주\)/g, '').replace(/\(유\)/g, '').replace(/주식회사/g, '').trim();
         }
 
-        // 🌟 수정된 로그인 관련 로직 (Split UI 대응)
         const elLoginWrapper = document.getElementById('login-wrapper');
         const elAppSec = document.getElementById('app-section');
         const elRegSec = document.getElementById('register-section');
@@ -706,7 +714,6 @@
         }
 
         function showApp() {
-            // 부드러운 전환 효과 (Opacity)
             elLoginWrapper.style.opacity = '0';
             
             setTimeout(() => {
