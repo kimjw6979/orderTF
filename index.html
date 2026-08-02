@@ -59,7 +59,7 @@
             display: flex;
             z-index: 9000;
             transition: opacity 0.4s ease;
-            overflow-y: auto; /* 🚨 추가: 화면이 작을 때 상하 스크롤 허용 */
+            overflow-y: auto; /* 모바일에서 화면 넘어갈 때 상하 스크롤 허용 */
         }
         .login-image-side {
             flex: 1;
@@ -102,7 +102,7 @@
             justify-content: center;
             align-items: center;
             background: var(--sec-bg);
-            padding: 2rem; /* 추가: 스크롤 시 위아래 여백 확보 */
+            padding: 2rem;
         }
         .login-form-container {
             background: var(--bg);
@@ -222,15 +222,15 @@
         .autocomplete-list li:hover, .autocomplete-active { background-color: var(--primary-light) !important; color: var(--primary-hover); }
         .text-small { color: var(--text-light); font-size: 0.8rem; display: block; margin-top: 4px; }
 
-        /* 🚨 모바일 반응형 디자인 (수정됨: 여백 최적화 및 스크롤 문제 해결) */
+        /* 모바일 반응형 디자인 */
         @media (max-width: 768px) {
             #login-wrapper { flex-direction: column; overflow-y: auto; height: 100%; position: fixed; }
-            .login-image-side { padding: 2rem 1rem; flex: 0 0 auto; height: auto; min-height: auto; } /* 여백과 최소 높이 줄임 */
+            .login-image-side { padding: 2rem 1rem; flex: 0 0 auto; height: auto; min-height: auto; }
             .login-image-side h1 { font-size: 1.8rem; margin-bottom: 0.3rem;}
             .login-image-side p { font-size: 0.9rem; }
-            .login-image-side img { max-width: 160px; margin-top: 1rem; border-radius: 12px; } /* 이미지 크기 최적화 */
+            .login-image-side img { max-width: 160px; margin-top: 1rem; border-radius: 12px; }
             
-            .login-form-side { padding: 1.5rem 1rem 3rem 1rem; align-items: flex-start; } /* 하단 여백 추가로 스크롤 시 공간 확보 */
+            .login-form-side { padding: 1.5rem 1rem 3rem 1rem; align-items: flex-start; }
             .login-form-container { box-shadow: none; border: none; background: transparent; padding: 0; max-width: 100%; }
             .login-form-container p { margin-bottom: 1.5rem !important; }
 
@@ -338,12 +338,12 @@
         </div>
     </div>
 
-    <!-- 🌟 수정된 로그인 화면 -->
+    <!-- 🌟 로그인 화면 -->
     <div id="login-wrapper">
         <div class="login-image-side">
             <!-- 텍스트 영역 -->
-            <h1>TJPHARM Order Desk</h1>
-            <p>신속하고 정확하고 확실한 의약품 주문 요청 시스템</p>
+            <h1>TJPHARM Order Desk </h1>
+            <p>신속하고 정확한 의약품 발주 요청 시스템</p>
             
             <!-- 이미지 영역 -->
             <img src="logo.png" alt="TJ Pharm Logo" onerror="this.style.display='none';">
@@ -553,7 +553,10 @@
         let selectedProductIsOOS = false; 
         
         const ADMIN_PW = "04017";
+        // ✅ 체크박스(입고, 확인)를 누를 수 있는 권한자 명단
         const AUTHORIZED_USERS = ['김현중', '김정욱', '박형삼', '박지영', '권은숙', '최유리', '송요운'];
+        // 🌟 ✅ 좌측 하단 [톱니바퀴] 관리자 설정 메뉴를 볼 수 있는 최고 관리자 명단 (이곳에 이름을 적어주세요!)
+        const SUPER_ADMINS = ['김현중', '김정욱']; 
 
         const isTrue = (val) => val === 1 || val === true || val === 'true';
 
@@ -722,7 +725,13 @@
             setTimeout(() => {
                 elLoginWrapper.classList.add('hidden');
                 elAppSec.classList.remove('hidden');
-                btnSidebar.classList.remove('hidden'); 
+                
+                // 🌟 수정된 부분: 최고 관리자(SUPER_ADMINS)에게만 톱니바퀴 버튼 표시
+                if (SUPER_ADMINS.includes(currentUser)) {
+                    btnSidebar.classList.remove('hidden'); 
+                } else {
+                    btnSidebar.classList.add('hidden');
+                }
             }, 400);
 
             document.getElementById('welcome-msg').innerHTML = `✅ 인증 완료! 환영합니다, <strong>${currentUser}</strong>님`;
