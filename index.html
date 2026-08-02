@@ -52,72 +52,88 @@
         ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
 
         /* =========================================================
-           🌟 핀테크 스타일 플로팅 카드 로그인 스크린 
+           🌟 반반 분할(Split) 레이아웃 + 핀테크 UI
            ========================================================= */
         #login-wrapper {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100vh;
-            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: var(--bg);
+            display: flex; /* 좌우 분할 */
+            flex-direction: row;
             z-index: 9000;
             transition: opacity 0.4s ease;
             overflow-y: auto;
-            padding: 1rem;
-            box-sizing: border-box;
         }
         
-        /* 배경 장식 패턴 */
-        #login-wrapper::before {
-            content: ''; position: absolute; width: 600px; height: 600px;
-            background: rgba(255,255,255,0.04); border-radius: 50%;
-            top: -100px; left: -100px; pointer-events: none;
+        /* 좌측: 파란색 배경과 큰 이미지 */
+        .login-image-side {
+            flex: 1;
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
-        #login-wrapper::after {
-            content: ''; position: absolute; width: 400px; height: 400px;
-            background: rgba(255,255,255,0.04); border-radius: 50%;
-            bottom: -50px; right: -50px; pointer-events: none;
+        .login-image-side::after {
+            content: ''; position: absolute; width: 800px; height: 800px;
+            background: rgba(255,255,255,0.06); border-radius: 50%;
+            top: -150px; right: -150px;
         }
-
-        /* 중앙 플로팅 카드 */
-        .login-card {
-            background: var(--bg);
+        
+        .login-image-side h1 {
+            color: white; border: none; padding: 0; font-size: 2.8rem; justify-content: center; margin-bottom: 0.8rem; z-index: 1; font-weight: 800; letter-spacing: -0.03em;
+        }
+        .login-image-side p {
+            color: rgba(255,255,255,0.9); font-size: 1.15rem; z-index: 1; margin: 0; font-weight: 400; letter-spacing: -0.02em;
+        }
+        .login-image-side img {
             width: 100%;
-            max-width: 420px;
-            border-radius: 28px;
-            padding: 3rem 2.5rem;
-            box-shadow: var(--shadow-xl);
+            max-width: 380px; 
+            margin-top: 3rem; 
+            border-radius: 20px; 
+            box-shadow: var(--shadow-xl); 
+            z-index: 1;
+            object-fit: cover;
+        }
+        
+        /* 우측: 흰색 배경과 키패드 */
+        .login-form-side {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg); /* 완전히 흰색으로 개방감 부여 */
+            padding: 2rem;
+        }
+        .login-form-container {
+            width: 100%;
+            max-width: 380px;
+            text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
-            z-index: 1;
-            box-sizing: border-box;
-        }
-
-        .login-logo {
-            width: 90px; height: 90px;
-            border-radius: 22px;
-            object-fit: cover;
-            margin-bottom: 1.2rem;
-            box-shadow: var(--shadow-md);
         }
 
         .login-title {
-            font-size: 1.6rem; font-weight: 800; color: #0F172A; margin-bottom: 0.4rem; text-align: center;
+            font-size: 1.8rem; font-weight: 800; color: #0F172A; margin-bottom: 0.5rem; text-align: center;
         }
         .login-subtitle {
-            font-size: 0.95rem; color: var(--text-light); text-align: center; margin-bottom: 2.5rem;
+            font-size: 1rem; color: var(--text-light); text-align: center; margin-bottom: 3rem;
         }
 
-        /* 도트(Dot) UI */
+        /* 4자리 도트(Dot) UI */
         .pin-display {
             display: flex;
             gap: 1.5rem;
-            margin-bottom: 2.5rem;
-            height: 24px; /* 높이 고정으로 흔들림 방지 */
+            margin-bottom: 3rem;
+            height: 24px;
             align-items: center;
+            justify-content: center;
         }
         .dot {
             width: 16px; height: 16px;
@@ -148,7 +164,7 @@
         .keypad {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 0.8rem 1.5rem;
+            gap: 1rem 1.5rem;
             width: 100%;
             user-select: none;
         }
@@ -159,7 +175,7 @@
             font-size: 1.7rem;
             font-weight: 500;
             color: #1E293B;
-            height: 70px;
+            height: 75px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -169,7 +185,7 @@
             font-family: inherit;
         }
         .key:active {
-            background-color: #E2E8F0;
+            background-color: #F1F5F9;
             transform: scale(0.95);
         }
         .key.control {
@@ -179,10 +195,15 @@
         .key.empty { cursor: default; }
         .key.empty:active { background: transparent; transform: none; }
 
-        @media (max-width: 480px) {
-            .login-card { padding: 2.5rem 1.5rem; border-radius: 24px; }
-            .login-logo { width: 80px; height: 80px; }
-            .key { height: 60px; font-size: 1.6rem; }
+        @media (max-width: 768px) {
+            #login-wrapper { flex-direction: column; overflow-y: auto; height: 100%; position: fixed; }
+            .login-image-side { padding: 3rem 1.5rem; flex: 0 0 auto; height: auto; min-height: 250px; }
+            .login-image-side h1 { font-size: 2rem; margin-bottom: 0.3rem;}
+            .login-image-side p { font-size: 0.95rem; }
+            .login-image-side img { max-width: 220px; margin-top: 1.5rem; }
+            
+            .login-form-side { padding: 2.5rem 1.5rem 3rem 1.5rem; align-items: flex-start; background: var(--bg); }
+            .key { height: 65px; font-size: 1.6rem; }
             .pin-display { gap: 1.2rem; margin-bottom: 2rem; }
         }
 
@@ -286,7 +307,7 @@
         .autocomplete-list li:hover, .autocomplete-active { background-color: var(--primary-light) !important; color: var(--primary-hover); }
         .text-small { color: var(--text-light); font-size: 0.8rem; display: block; margin-top: 4px; }
 
-        /* 모바일 반응형 디자인 (앱 화면) */
+        /* 모바일 반응형 디자인 (앱 화면용) */
         @media (max-width: 768px) {
             .main { padding: 1.5rem 1rem; }
             h1 { font-size: 1.4rem; flex-direction: column; align-items: flex-start; gap: 0.8rem;}
@@ -334,7 +355,7 @@
             
             <div class="upload-card">
                 <div class="upload-card-header">
-                    <span class="upload-title">📦 상품색인부</span>
+                    <span class="upload-title">📦 상품 색인부</span>
                     <span id="date-products" style="color: var(--danger); font-size: 0.85rem; font-weight: 600;"></span>
                 </div>
                 <input type="file" id="file-products" accept=".xlsx, .xls" class="file-input">
@@ -386,68 +407,73 @@
             </div>
             
             <h3 style="font-size: 1rem; margin-top: 2rem;">🚨 시스템 초기화</h3>
-            <button style="background-color: #334155; margin-bottom: 0.5rem;" onclick="clearData('clearAllEntries')">🗑️ 발주 내역 전체 초기화</button>
+            <button style="background-color: #334155; margin-bottom: 0.5rem;" onclick="clearData('clearAllEntries')">🗑️ 주문 내역 전체 초기화</button>
             <button style="background-color: #334155; margin-bottom: 0.5rem;" onclick="clearData('clearOutOfStock')">🗑️ 품절 관리 품목 초기화</button>
             <button style="background-color: #334155; margin-bottom: 0.5rem;" onclick="clearData('clearAllPins')">🔄 PIN 등록 내역 전체 초기화</button>
         </div>
     </div>
 
-    <!-- 🌟 수정된 플로팅 카드 & 핀테크 로그인 화면 -->
+    <!-- 🌟 수정된 로그인 화면 (좌우 반반 분할 레이아웃 + 핀테크 키패드) -->
     <div id="login-wrapper">
-        <div class="login-card">
-            
-            <img src="logo.png" alt="TJ Pharm Logo" class="login-logo" onerror="this.style.display='none';">
-            <h1 class="login-title">TJPHARM Order Desk </h1>
-            <p class="login-subtitle">개인 접속 PIN을 입력해주세요</p>
-            
-            <!-- 4자리 도트(Dot) UI -->
-            <div class="pin-display">
-                <div class="dot" id="dot-1"></div>
-                <div class="dot" id="dot-2"></div>
-                <div class="dot" id="dot-3"></div>
-                <div class="dot" id="dot-4"></div>
-            </div>
+        <div class="login-image-side">
+            <h1>TJPHARM Order Desk </h1>
+            <p>신속하고 정확한 의약품 주문 요청 시스템</p>
+            <img src="logo.png" alt="TJ Pharm Logo" onerror="this.style.display='none';">
+        </div>
+        
+        <div class="login-form-side">
+            <div class="login-form-container">
+                <h3 class="login-title">🔐 접속하기</h3>
+                <p class="login-subtitle">개인 접속 PIN <strong>4자리</strong>를 입력하세요</p>
+                
+                <!-- 4자리 도트(Dot) UI -->
+                <div class="pin-display">
+                    <div class="dot" id="dot-1"></div>
+                    <div class="dot" id="dot-2"></div>
+                    <div class="dot" id="dot-3"></div>
+                    <div class="dot" id="dot-4"></div>
+                </div>
 
-            <!-- 백엔드 통신 및 기존 로직 호환용 Hidden Input -->
-            <input type="hidden" id="user-pin" value="">
+                <!-- 백엔드 통신 및 기존 로직 호환용 Hidden Input -->
+                <input type="hidden" id="user-pin" value="">
 
-            <!-- 자체 키패드 (기본 키보드 차단) -->
-            <div id="keypad-section" class="keypad-section">
-                <div class="keypad">
-                    <button class="key" onclick="pressKey('1')">1</button>
-                    <button class="key" onclick="pressKey('2')">2</button>
-                    <button class="key" onclick="pressKey('3')">3</button>
-                    <button class="key" onclick="pressKey('4')">4</button>
-                    <button class="key" onclick="pressKey('5')">5</button>
-                    <button class="key" onclick="pressKey('6')">6</button>
-                    <button class="key" onclick="pressKey('7')">7</button>
-                    <button class="key" onclick="pressKey('8')">8</button>
-                    <button class="key" onclick="pressKey('9')">9</button>
-                    <button class="key empty"></button>
-                    <button class="key" onclick="pressKey('0')">0</button>
-                    <button class="key control" onclick="deleteKey()">⌫</button>
+                <!-- 자체 키패드 -->
+                <div id="keypad-section" class="keypad-section">
+                    <div class="keypad">
+                        <button class="key" onclick="pressKey('1')">1</button>
+                        <button class="key" onclick="pressKey('2')">2</button>
+                        <button class="key" onclick="pressKey('3')">3</button>
+                        <button class="key" onclick="pressKey('4')">4</button>
+                        <button class="key" onclick="pressKey('5')">5</button>
+                        <button class="key" onclick="pressKey('6')">6</button>
+                        <button class="key" onclick="pressKey('7')">7</button>
+                        <button class="key" onclick="pressKey('8')">8</button>
+                        <button class="key" onclick="pressKey('9')">9</button>
+                        <button class="key empty"></button>
+                        <button class="key" onclick="pressKey('0')">0</button>
+                        <button class="key control" onclick="deleteKey()">⌫</button>
+                    </div>
+                </div>
+                
+                <!-- 신규 등록 화면 -->
+                <div id="register-section" class="hidden" style="width: 100%; text-align: left;">
+                    <div class="info-box" style="border-radius: var(--radius-md); border-left: none; background: #F8FAFC; border: 1px solid var(--border); padding: 1.2rem; margin-bottom: 1.5rem;">
+                        <p style="color: var(--text); font-size: 0.9rem;">👋 미등록 PIN 입니다.<br>사용하실 <strong>본인의 이름</strong>을 등록해주세요.<br><span style="font-size:0.8rem; color:var(--danger); margin-top:0.5rem; display:inline-block;">※ 관리자 승인 후 접속 가능</span></p>
+                    </div>
+                    <input type="text" id="user-name" placeholder="이름 입력 (예: 김정욱)" style="border-radius: 12px; margin-bottom: 1.5rem;">
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button onclick="registerPin()" style="border-radius: 12px; flex: 2;">승인 요청하기</button>
+                        <button onclick="cancelRegister()" class="secondary" style="border-radius: 12px; flex: 1; padding: 0.9rem;">취소</button>
+                    </div>
                 </div>
             </div>
-            
-            <!-- 신규 등록 화면 -->
-            <div id="register-section" class="hidden" style="width: 100%; margin-top: 1rem; text-align: left;">
-                <div class="info-box" style="border-radius: var(--radius-md); border-left: none; background: #F8FAFC; border: 1px solid var(--border); padding: 1.2rem; margin-bottom: 1.5rem;">
-                    <p style="color: var(--text); font-size: 0.9rem;">👋 미등록 PIN 입니다.<br>사용하실 <strong>본인의 이름</strong>을 등록해주세요.<br><span style="font-size:0.8rem; color:var(--danger); margin-top:0.5rem; display:inline-block;">※ 관리자 승인 후 접속 가능</span></p>
-                </div>
-                <input type="text" id="user-name" placeholder="이름 입력 (예: 김정욱)" style="border-radius: 12px;">
-                <div style="display: flex; gap: 0.5rem;">
-                    <button onclick="registerPin()" style="border-radius: 12px; flex: 2;">승인 요청하기</button>
-                    <button onclick="cancelRegister()" class="secondary" style="border-radius: 12px; flex: 1; padding: 0.9rem;">취소</button>
-                </div>
-            </div>
-
         </div>
     </div>
 
     <!-- 메인 화면 -->
     <div class="main hidden" id="app-section">
         <h1>
-            <span>📋 티제이팜 주문요청 게시판 <span style="font-size: 1rem; font-weight: normal; color: var(--primary);">[Cloudflare D1 연결 🟢]</span></span>
+            <span>📋 티제이팜 주문요청 게시판 <span style="font-size: 1rem; font-weight: normal; color: var(--primary);">[Cloudflare D1 🟢]</span></span>
             <button onclick="loadAllData()" class="secondary" style="width:auto; padding:0.6rem 1.2rem; font-size:0.9rem;">🔄 새로고침</button>
         </h1>
         
@@ -477,7 +503,7 @@
         </div>
 
         <!-- Input Form -->
-        <h3 style="margin-top: 3rem;">✍️ 신규 발주 추가</h3>
+        <h3 style="margin-top: 3rem;">✍️ 신규 주문 요청 추가</h3>
         <p>상품, 거래처 정보와 사유(필수)를 입력하세요. (사유는 최대 30자)</p>
         
         <div class="form-row">
@@ -508,7 +534,7 @@
                 <input type="text" id="i-reason" placeholder="📝 등록 사유 (필수)" maxlength="30">
             </div>
         </div>
-        <button onclick="addRow()" id="btn-add">➕ 신규 발주 라인 추가</button>
+        <button onclick="addRow()" id="btn-add">➕ 신규 주문 라인 추가</button>
         
         <hr style="border: 0; border-top: 1px solid var(--border); margin: 3rem 0;">
         
@@ -633,12 +659,27 @@
         // ✅ 체크박스(입고, 확인)를 누를 수 있는 권한자 명단
         const AUTHORIZED_USERS = ['김현중', '김정욱', '박형삼', '박지영', '권은숙', '최유리', '송요운'];
         // 🌟 ✅ 최고 관리자 명단 (톱니바퀴)
-        const SUPER_ADMINS = ['김현중', '김정욱']; 
+        const SUPER_ADMINS = ['김정욱']; 
 
         const isTrue = (val) => val === 1 || val === true || val === 'true';
 
         window.addEventListener('load', () => {
             loadAllData(true); 
+        });
+
+        // 🌟 PC 사용자들을 위한 물리 키보드 숫자 입력 이벤트 추가
+        window.addEventListener('keydown', function(e) {
+            const loginWrapper = document.getElementById('login-wrapper');
+            const regSection = document.getElementById('register-section');
+            
+            // 로그인 화면이 열려있고, 이름 등록 폼(텍스트 입력)이 숨겨져 있을 때만 동작
+            if (!loginWrapper.classList.contains('hidden') && regSection.classList.contains('hidden')) {
+                if (e.key >= '0' && e.key <= '9') {
+                    pressKey(e.key);
+                } else if (e.key === 'Backspace' || e.key === 'Delete') {
+                    deleteKey();
+                }
+            }
         });
 
         async function loadAllData(isSilent = false) {
@@ -725,7 +766,7 @@
         const elRegSec = document.getElementById('register-section');
         const btnSidebar = document.getElementById('btn-show-sidebar');
         
-        /* 🌟 핀테크 키패드 로직 추가 */
+        /* 🌟 핀테크 키패드 로직 */
         function pressKey(num) {
             if (currentInputPin.length < 4) {
                 currentInputPin += num;
@@ -748,7 +789,6 @@
         }
 
         function updateDots() {
-            // 화면 동그라미 상태 업데이트
             for (let i = 1; i <= 4; i++) {
                 const dot = document.getElementById(`dot-${i}`);
                 if (i <= currentInputPin.length) {
@@ -759,7 +799,6 @@
                     dot.classList.remove('error');
                 }
             }
-            // 백엔드 호환용 숨겨진 인풋 업데이트
             document.getElementById('user-pin').value = currentInputPin;
         }
         
@@ -778,7 +817,7 @@
             const pin = currentInputPin;
             
             if (pin.length !== 4) {
-                return; // 자동 로그인이므로 예외처리 최소화
+                return;
             }
 
             currentPin = pin;
@@ -793,13 +832,11 @@
                     setErrorDots();
                 }
             } else {
-                // 존재하지 않는 핀일 경우 -> 키패드 숨기고 등록 폼 보이기
                 document.getElementById('keypad-section').classList.add('hidden');
                 elRegSec.classList.remove('hidden');
             }
         }
         
-        /* 🌟 등록화면에서 뒤로가기(취소) 버튼 로직 */
         function cancelRegister() {
             elRegSec.classList.add('hidden');
             document.getElementById('keypad-section').classList.remove('hidden');
@@ -847,7 +884,7 @@
                 });
                 
                 showToast("⏳ 등록 완료! 관리자의 승인 후 접속할 수 있습니다.");
-                cancelRegister(); // 키패드 상태로 돌리기
+                cancelRegister(); 
                 loadAllData();
             } catch (e) {
                 showToast("등록 실패: API 통신 오류", true);
@@ -881,7 +918,7 @@
 
         function addRow() {
             if (selectedProductIsOOS) {
-                showToast("🚨 품절 또는 판매중단된 품목은 신규 발주를 추가할 수 없습니다.", true);
+                showToast("🚨 품절 또는 판매중단된 품목은 신규 주문을 추가할 수 없습니다.", true);
                 return;
             }
 
@@ -972,7 +1009,7 @@
                 document.getElementById('i-qty').value = "";
                 document.getElementById('i-reason').value = "";
                 selectedProductIsOOS = false;
-                showToast("✅ 신규 발주 라인이 등록되었습니다.");
+                showToast("✅ 신규 주문 라인이 등록되었습니다.");
                 currentPage = 1; 
             }).finally(() => {
                 document.getElementById('btn-add').disabled = false;
@@ -1387,7 +1424,7 @@
         };
 
         async function clearData(action) {
-            let msg = "발주 내역";
+            let msg = "주문 내역";
             if (action === 'clearOutOfStock') msg = "품절 관리 품목";
             else if (action === 'clearAllPins') msg = "PIN 등록 내역";
 
@@ -1503,7 +1540,7 @@
                 { wch: 10 }, { wch: 20 }, { wch: 18 }, { wch: 10 }, { wch: 10 }, { wch: 30 }
             ];
             
-            XLSX.utils.book_append_sheet(workbook, worksheet, "발주내역");
+            XLSX.utils.book_append_sheet(workbook, worksheet, "주문내역");
 
             const today = new Date();
             const dateString = today.getFullYear() + "-" + 
@@ -1516,7 +1553,7 @@
             else if (filter === 'recv') filterName = "입고완료";
             else if (filter === 'del') filterName = "삭제내역";
             
-            XLSX.writeFile(workbook, `TJPHARM_발주TF_발주내역_${filterName}_${dateString}.xlsx`);
+            XLSX.writeFile(workbook, `TJPHARM_발주TF_주문내역_${filterName}_${dateString}.xlsx`);
         }
 
         function showToast(msg, isError=false) {
@@ -1692,7 +1729,7 @@
                     const addBtn = document.getElementById('btn-add');
                     addBtn.disabled = false;
                     addBtn.style.backgroundColor = '';
-                    addBtn.innerText = '➕ 신규 발주 라인 추가';
+                    addBtn.innerText = '➕ 신규 주문 라인 추가';
                 }
 
                 const val = this.value.trim().toLowerCase().replace(/\^/g, ' ');
@@ -1869,7 +1906,7 @@
                         addBtn.disabled = false;
                         addBtn.style.backgroundColor = '';
                         addBtn.style.color = '';
-                        addBtn.innerText = '➕ 신규 발주 라인 추가';
+                        addBtn.innerText = '➕ 신규 주문 라인 추가';
                     }
                 }
             );
