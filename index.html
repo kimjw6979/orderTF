@@ -7,30 +7,24 @@
     
     <!-- 폰트: 가독성이 좋은 Pretendard 적용 -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-    
     <!-- 엑셀 전용 무료 라이브러리 (SheetJS) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         :root {
-            /* 🔵 모던 블루 테마 컬러 팔레트 */
-            --primary: #2563EB;        /* 메인 블루 (신뢰감 있고 세련된 파랑) */
-            --primary-hover: #1D4ED8;  /* 마우스 오버시 짙은 블루 */
-            --primary-light: #EFF6FF;  /* 아주 옅은 블루 (배경/하이라이트용) */
+            --primary: #2563EB;
+            --primary-hover: #1D4ED8;
+            --primary-light: #EFF6FF;
             --primary-border: #BFDBFE;
-            
             --bg: #FFFFFF;
-            --sec-bg: #F8FAFC;         /* 밝고 시원한 배경색 */
-            
-            --text: #1E293B;           /* 완전 검은색보다 세련된 진한 슬레이트 */
+            --sec-bg: #F8FAFC;
+            --text: #1E293B;
             --text-light: #64748B;
             --border: #E2E8F0;
-            
-            --success: #10B981;        /* 완료/성공 (에메랄드 그린) */
-            --received: #F0FDF4;       /* 입고완료 배경색 */
-            --warning: #F59E0B;        /* 미체크 등 경고 색상 */
-            --danger: #EF4444;         /* 삭제, 날짜 등 강조용 빨간색 */
-            
+            --success: #10B981;
+            --received: #F0FDF4;
+            --warning: #F59E0B;
+            --danger: #EF4444;
             --radius-sm: 6px;
             --radius-md: 10px;
             --radius-lg: 16px;
@@ -50,193 +44,128 @@
             letter-spacing: -0.01em;
         }
 
-        /* 🌟 스플래시 화면 */
-        #splash-screen {
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%;
-            background-color: #FFFFFF; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
-            z-index: 9999; 
-            transition: opacity 0.8s ease;
-        }
-        #splash-screen img { 
-            max-width: 90%; 
-            max-height: 90vh; 
-            border-radius: var(--radius-lg); 
-            box-shadow: var(--shadow-lg); 
-        }
-
         /* 스크롤바 커스텀 */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--sec-bg); }
         ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
 
+        /* 🌟 로그인 스크린 (Split Layout) */
+        #login-wrapper {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            background: var(--bg);
+            display: flex;
+            z-index: 9000;
+            transition: opacity 0.4s ease;
+        }
+        .login-image-side {
+            flex: 1;
+            background: linear-gradient(135deg, #1E3A8A 0%, var(--primary) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .login-image-side::after {
+            content: ''; position: absolute; width: 600px; height: 600px;
+            background: rgba(255,255,255,0.05); border-radius: 50%;
+            top: -100px; right: -100px;
+        }
+        .login-image-side img {
+            max-width: 250px;
+            margin-bottom: 2rem;
+            z-index: 1;
+        }
+        .login-image-side h1 {
+            color: white; border: none; padding: 0; font-size: 2.5rem; justify-content: center; margin-bottom: 1rem; z-index: 1;
+        }
+        .login-image-side p {
+            color: rgba(255,255,255,0.8); font-size: 1.1rem; z-index: 1;
+        }
+        
+        .login-form-side {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--sec-bg);
+        }
+        .login-form-container {
+            background: var(--bg);
+            padding: 4rem 3rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
+
         /* Layout */
         .sidebar { 
-            width: 360px; 
-            background-color: var(--bg); 
-            padding: 2rem 1.5rem; 
-            border-right: 1px solid var(--border); 
-            box-sizing: border-box;
-            display: flex; 
-            flex-direction: column; 
-            gap: 1.5rem; 
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 2px 0 10px rgba(0,0,0,0.02);
-            z-index: 100;
+            width: 360px; background-color: var(--bg); padding: 2rem 1.5rem; border-right: 1px solid var(--border); 
+            box-sizing: border-box; display: flex; flex-direction: column; gap: 1.5rem; 
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 2px 0 10px rgba(0,0,0,0.02); z-index: 100;
         }
         .main { 
-            flex-grow: 1; 
-            padding: 2.5rem 4rem; 
-            background: var(--sec-bg); 
-            box-sizing: border-box; 
-            overflow-y: auto; 
-            transition: width 0.3s ease;
+            flex-grow: 1; padding: 2.5rem 4rem; background: var(--sec-bg); box-sizing: border-box; overflow-y: auto; transition: width 0.3s ease;
         }
         
         /* Typography */
-        h1 { 
-            font-size: 2rem; 
-            font-weight: 700; 
-            margin-top: 0; 
-            padding-bottom: 1.2rem; 
-            border-bottom: 2px solid var(--border); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            color: #0F172A;
-        }
+        h1 { font-size: 2rem; font-weight: 700; margin-top: 0; padding-bottom: 1.2rem; border-bottom: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center; color: #0F172A; }
         h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; color: #1E293B; }
         h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; color: #334155; }
         p { margin: 0 0 1rem 0; line-height: 1.6; color: var(--text-light); font-size: 0.95rem; }
         
-        /* Form Elements (입력창 디자인 고도화) */
+        /* Form Elements */
         input, select { 
-            width: 100%; 
-            padding: 0.8rem 1rem; 
-            margin-bottom: 1rem; 
-            border: 1px solid var(--border); 
-            border-radius: var(--radius-md); 
-            box-sizing: border-box; 
-            font-size: 0.95rem; 
-            background-color: var(--bg); 
-            transition: all 0.2s ease;
-            box-shadow: var(--shadow-sm);
-            color: var(--text);
-            font-family: inherit;
+            width: 100%; padding: 0.8rem 1rem; margin-bottom: 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); 
+            box-sizing: border-box; font-size: 0.95rem; background-color: var(--bg); transition: all 0.2s ease; box-shadow: var(--shadow-sm); color: var(--text); font-family: inherit;
         }
-        input:focus, select:focus { 
-            outline: none; 
-            border-color: var(--primary); 
-            box-shadow: 0 0 0 3px var(--primary-border); 
-        }
+        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-border); }
         input::placeholder { color: #94A3B8; }
         
-        /* Buttons (버튼 디자인 입체감 부여) */
+        /* Buttons */
         button { 
-            width: 100%; 
-            padding: 0.8rem 1rem; 
-            background-color: var(--primary); 
-            color: white; 
-            border: none; 
-            border-radius: var(--radius-md); 
-            cursor: pointer; 
-            font-size: 0.95rem; 
-            font-weight: 600; 
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: var(--shadow-sm);
+            width: 100%; padding: 0.8rem 1rem; background-color: var(--primary); color: white; border: none; border-radius: var(--radius-md); 
+            cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: var(--shadow-sm);
         }
-        button:hover { 
-            background-color: var(--primary-hover); 
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
-        }
+        button:hover { background-color: var(--primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
         button:active { transform: translateY(0); box-shadow: none; }
-        button:disabled { 
-            background-color: #CBD5E1; 
-            cursor: not-allowed; 
-            transform: none;
-            box-shadow: none;
-        }
+        button:disabled { background-color: #CBD5E1; cursor: not-allowed; transform: none; box-shadow: none; }
         
-        button.secondary { 
-            background-color: var(--bg); 
-            color: var(--text); 
-            border: 1px solid var(--border); 
-        }
-        button.secondary:hover { 
-            background-color: var(--primary-light); 
-            color: var(--primary); 
-            border-color: var(--primary-border); 
-        }
+        button.secondary { background-color: var(--bg); color: var(--text); border: 1px solid var(--border); }
+        button.secondary:hover { background-color: var(--primary-light); color: var(--primary); border-color: var(--primary-border); }
         
         /* 관리자 업로드 카드 */
-        .upload-card { 
-            background: var(--bg); 
-            border: 1px solid var(--border); 
-            border-radius: var(--radius-md); 
-            padding: 1.2rem 1rem; 
-            margin-bottom: 1.2rem; 
-            box-shadow: var(--shadow-sm); 
-            transition: border-color 0.2s;
-        }
+        .upload-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.2rem 1rem; margin-bottom: 1.2rem; box-shadow: var(--shadow-sm); transition: border-color 0.2s; }
         .upload-card:hover { border-color: var(--primary-border); }
-        .upload-card-header { 
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; 
-        }
+        .upload-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
         .upload-title { font-size: 0.95rem; font-weight: 700; color: var(--text); }
         .file-input { margin-bottom: 0.8rem; box-shadow: none; padding: 0.5rem; font-size: 0.85rem;}
         .btn-upload { padding: 0.6rem; font-size: 0.9rem; margin-bottom: 0; }
 
-        /* Metrics (대시보드 카드) */
+        /* Metrics */
         .metrics { display: flex; gap: 1.2rem; margin: 2rem 0; }
-        .metric-card { 
-            background: var(--bg); 
-            padding: 1.5rem; 
-            border-radius: var(--radius-lg); 
-            flex: 1; 
-            box-shadow: var(--shadow-sm); 
-            border: 1px solid var(--border); 
-            text-align: center;
-            transition: transform 0.2s;
-            position: relative;
-            overflow: hidden;
-        }
+        .metric-card { background: var(--bg); padding: 1.5rem; border-radius: var(--radius-lg); flex: 1; box-shadow: var(--shadow-sm); border: 1px solid var(--border); text-align: center; transition: transform 0.2s; position: relative; overflow: hidden; }
         .metric-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-        .metric-card::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
-            background: var(--border);
-        }
+        .metric-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: var(--border); }
         .metric-card:nth-child(1)::before { background: var(--text-light); }
         .metric-card:nth-child(2)::before { background: var(--warning); }
         .metric-card:nth-child(3)::before { background: var(--success); }
         .metric-card:nth-child(4)::before { background: var(--primary); } 
-
         .metric-title { font-size: 0.95rem; color: var(--text-light); margin-bottom: 0.8rem; font-weight: 600; }
         .metric-value { font-size: 2.5rem; font-weight: 800; color: var(--text); letter-spacing: -1px;}
         
         /* Layout Grids */
-        .form-row { 
-            display: grid; 
-            grid-template-columns: 2fr 2fr 0.8fr 1.2fr 1fr 2fr; 
-            gap: 1rem; 
-            margin-bottom: 1rem; 
-        }
-        .search-grid { 
-            display: grid; 
-            grid-template-columns: repeat(6, 1fr); 
-            gap: 0.8rem; 
-            padding: 1.2rem; 
-            background: var(--bg); 
-            border-radius: var(--radius-md); 
-            margin-bottom: 0; 
-        }
+        .form-row { display: grid; grid-template-columns: 2fr 2fr 0.8fr 1.2fr 1fr 2fr; gap: 1rem; margin-bottom: 1rem; }
+        .search-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.8rem; padding: 1.2rem; background: var(--bg); border-radius: var(--radius-md); margin-bottom: 0; }
         .search-grid input { margin-bottom: 0; padding: 0.6rem 0.8rem; font-size: 0.9rem; }
         
         @media (max-width: 1300px) { 
@@ -244,163 +173,57 @@
             .search-grid { grid-template-columns: repeat(3, 1fr); }
         }
         
-        /* Table (세련된 테이블 디자인) */
-        .table-container {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-sm);
-            overflow-x: auto;
-            margin-bottom: 1rem;
-        }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            font-size: 0.9rem; 
-        }
-        th, td { 
-            border-bottom: 1px solid var(--border); 
-            padding: 1.2rem 0.8rem; 
-            text-align: center; 
-            vertical-align: middle; 
-            transition: background-color 0.2s; 
-        }
-        th { 
-            color: var(--text-light); 
-            font-weight: 700; 
-            background: #F8FAFC; 
-            position: sticky; 
-            top: 0;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 0.05em;
-            border-bottom: 2px solid var(--border);
-        }
+        /* Table */
+        .table-container { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow-x: auto; margin-bottom: 1rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th, td { border-bottom: 1px solid var(--border); padding: 1.2rem 0.8rem; text-align: center; vertical-align: middle; transition: background-color 0.2s; }
+        th { color: var(--text-light); font-weight: 700; background: #F8FAFC; position: sticky; top: 0; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em; border-bottom: 2px solid var(--border); }
         tr:hover td { background-color: var(--sec-bg); }
         tr:last-child td { border-bottom: none; }
         
-        /* Checkbox Customization (포인트 체크박스) */
-        input[type="checkbox"] { 
-            appearance: none;
-            width: 20px; 
-            height: 20px; 
-            border: 2px solid #CBD5E1;
-            border-radius: 4px;
-            cursor: pointer; 
-            position: relative;
-            background-color: var(--bg);
-            transition: all 0.2s;
-        }
-        input[type="checkbox"]:checked {
-            background-color: var(--primary);
-            border-color: var(--primary);
-        }
-        input[type="checkbox"]:checked::after {
-            content: '✔';
-            position: absolute;
-            color: white;
-            font-size: 14px;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        input[type="checkbox"].recv-cb:checked {
-            background-color: var(--primary);
-            border-color: var(--primary);
-        }
-        input[type="checkbox"]:disabled {
-            background-color: #F1F5F9;
-            border-color: #E2E8F0;
-            cursor: not-allowed;
-        }
+        /* Checkbox Customization */
+        input[type="checkbox"] { appearance: none; width: 20px; height: 20px; border: 2px solid #CBD5E1; border-radius: 4px; cursor: pointer; position: relative; background-color: var(--bg); transition: all 0.2s; }
+        input[type="checkbox"]:checked { background-color: var(--primary); border-color: var(--primary); }
+        input[type="checkbox"]:checked::after { content: '✔'; position: absolute; color: white; font-size: 14px; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        input[type="checkbox"].recv-cb:checked { background-color: var(--primary); border-color: var(--primary); }
+        input[type="checkbox"]:disabled { background-color: #F1F5F9; border-color: #E2E8F0; cursor: not-allowed; }
         
-        /* 라디오 버튼 그룹 커스텀 (Segmented Control 스타일) */
-        .filter-bar { 
-            display: flex; justify-content: space-between; align-items: center; 
-            background: var(--bg); padding: 1rem 1.5rem; 
-            border-radius: var(--radius-md); margin-bottom: 1.5rem; 
-            border: 1px solid var(--border); box-shadow: var(--shadow-sm);
-        }
-        .radio-group {
-            display: inline-flex;
-            background: var(--sec-bg);
-            padding: 4px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border);
-        }
-        .radio-group label {
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--text-light);
-            border-radius: var(--radius-sm);
-            transition: all 0.2s;
-            margin: 0;
-            display: flex; align-items: center; gap: 0.4rem;
-        }
+        /* Filter Bar */
+        .filter-bar { display: flex; justify-content: space-between; align-items: center; background: var(--bg); padding: 1rem 1.5rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+        .radio-group { display: inline-flex; background: var(--sec-bg); padding: 4px; border-radius: var(--radius-md); border: 1px solid var(--border); }
+        .radio-group label { padding: 0.5rem 1rem; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: var(--text-light); border-radius: var(--radius-sm); transition: all 0.2s; margin: 0; display: flex; align-items: center; gap: 0.4rem; }
         .radio-group input[type="radio"] { display: none; }
+        .radio-group input[type="radio"]:checked + label { background: var(--bg); color: #0F172A; font-weight: 700; box-shadow: var(--shadow-sm); }
         
-        /* 🖤 라디오 버튼 선택 시 검은색(진한 슬레이트)으로 표시되도록 변경 */
-        .radio-group input[type="radio"]:checked + label {
-            background: var(--bg);
-            color: #0F172A; /* 세련된 검은색 */
-            font-weight: 700; /* 선택 시 글씨를 조금 더 진하게 */
-            box-shadow: var(--shadow-sm);
-        }
-        
-        /* Info Box */
-        .info-box { 
-            background: var(--primary-light); 
-            border-left: 4px solid var(--primary); 
-            padding: 1.2rem; 
-            border-radius: 0 var(--radius-md) var(--radius-md) 0; 
-            margin-bottom: 1.5rem; 
-        }
+        .info-box { background: var(--primary-light); border-left: 4px solid var(--primary); padding: 1.2rem; border-radius: 0 var(--radius-md) var(--radius-md) 0; margin-bottom: 1.5rem; }
         .info-box p { margin: 0; color: var(--primary-hover); font-weight: 600; font-size: 0.95rem; }
         
-        /* Pagination */
-        .pagination { 
-            display: flex; justify-content: center; align-items: center; gap: 1.5rem; 
-            margin-top: 2rem; margin-bottom: 3rem;
-        }
+        .pagination { display: flex; justify-content: center; align-items: center; gap: 1.5rem; margin-top: 2rem; margin-bottom: 3rem; }
         .pagination button { width: auto; padding: 0.6rem 1.5rem; border-radius: 20px;}
         
-        /* Expander (상세 검색 영역) */
-        .expander { 
-            border: 1px solid var(--border); border-radius: var(--radius-md); 
-            margin-bottom: 1.5rem; overflow: hidden; background: var(--bg);
-            box-shadow: var(--shadow-sm);
-        }
-        .expander-header { 
-            background: var(--bg); padding: 1.2rem 1.5rem; cursor: pointer; 
-            font-weight: 700; display: flex; justify-content: space-between; 
-            color: #334155; border-bottom: 1px solid transparent;
-        }
+        .expander { border: 1px solid var(--border); border-radius: var(--radius-md); margin-bottom: 1.5rem; overflow: hidden; background: var(--bg); box-shadow: var(--shadow-sm); }
+        .expander-header { background: var(--bg); padding: 1.2rem 1.5rem; cursor: pointer; font-weight: 700; display: flex; justify-content: space-between; color: #334155; border-bottom: 1px solid transparent; }
         .expander-header:hover { background: var(--sec-bg); }
         .expander.open .expander-header { border-bottom-color: var(--border); }
         .expander-content { display: none; }
         .expander.open .expander-content { display: block; }
 
-        /* 자동완성 드롭다운 디자인 */
         .autocomplete-container { position: relative; width: 100%; }
-        .autocomplete-list {
-            position: absolute; top: calc(100% + 4px); left: 0; right: 0;
-            background: var(--bg); border: 1px solid var(--border); 
-            z-index: 1000; max-height: 300px; overflow-y: auto; display: none;
-            box-shadow: var(--shadow-lg); padding: 0.5rem; margin: 0; list-style: none;
-            border-radius: var(--radius-md);
-        }
-        .autocomplete-list li { 
-            padding: 12px; cursor: pointer; border-radius: var(--radius-sm);
-            font-size: 0.9rem; text-align: left; transition: background 0.1s;
-        }
-        .autocomplete-list li:hover, .autocomplete-active { 
-            background-color: var(--primary-light) !important; color: var(--primary-hover); 
-        }
+        .autocomplete-list { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--bg); border: 1px solid var(--border); z-index: 1000; max-height: 300px; overflow-y: auto; display: none; box-shadow: var(--shadow-lg); padding: 0.5rem; margin: 0; list-style: none; border-radius: var(--radius-md); }
+        .autocomplete-list li { padding: 12px; cursor: pointer; border-radius: var(--radius-sm); font-size: 0.9rem; text-align: left; transition: background 0.1s; }
+        .autocomplete-list li:hover, .autocomplete-active { background-color: var(--primary-light) !important; color: var(--primary-hover); }
         .text-small { color: var(--text-light); font-size: 0.8rem; display: block; margin-top: 4px; }
 
         /* 모바일 반응형 디자인 */
         @media (max-width: 768px) {
+            #login-wrapper { flex-direction: column; }
+            .login-image-side { padding: 2rem 1rem; flex: 0 0 auto; height: 180px; }
+            .login-image-side h1 { font-size: 1.5rem; margin-bottom: 0.5rem;}
+            .login-image-side p { font-size: 0.9rem; }
+            .login-image-side img { max-width: 120px; margin-bottom: 1rem; }
+            .login-form-side { padding: 2rem 1rem; align-items: flex-start; }
+            .login-form-container { box-shadow: none; border: none; background: transparent; padding: 0; max-width: 100%; }
+
             .main { padding: 1.5rem 1rem; }
             h1 { font-size: 1.4rem; flex-direction: column; align-items: flex-start; gap: 0.8rem;}
             .metrics { flex-direction: column; gap: 1rem; }
@@ -414,29 +237,16 @@
             .sidebar { width: 100%; position: fixed; height: 100%; overflow-y: auto; top:0; left:0;}
         }
 
-        /* 유틸리티/토스트 */
         .hidden { display: none !important; }
         .toast-container { position: fixed; bottom: 30px; right: 30px; z-index: 9999; }
-        .toast { 
-            background: #1E293B; color: white; padding: 14px 24px; 
-            border-radius: var(--radius-md); margin-top: 10px; 
-            box-shadow: var(--shadow-lg); opacity: 0; 
-            transform: translateY(20px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            font-weight: 500; display: flex; align-items: center; gap: 8px;
-        }
+        .toast { background: #1E293B; color: white; padding: 14px 24px; border-radius: var(--radius-md); margin-top: 10px; box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(20px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-weight: 500; display: flex; align-items: center; gap: 8px; }
         .toast.show { opacity: 1; transform: translateY(0); }
     </style>
 </head>
 <body>
 
-    <!-- 스플래시 화면 -->
-    <div id="splash-screen">
-        <!-- 배경이 깔끔한 흰색으로 변경되었습니다 -->
-        <img src="logo.png" alt="티제이팜 주문요청 게시판입니다!" onerror="this.style.display='none';">
-    </div>
-
     <!-- 사이드바 열기 버튼 -->
-    <button id="btn-show-sidebar" onclick="toggleSidebar()" style="position: fixed; bottom: 30px; left: 30px; width: 56px; height: 56px; border-radius: 50%; background: var(--text); color: white; border: none; font-size: 1.5rem; cursor: pointer; z-index: 1000; box-shadow: var(--shadow-lg); text-align: center; line-height: 56px; padding: 0; transition: transform 0.2s;" title="관리자 메뉴 열기">⚙️</button>
+    <button id="btn-show-sidebar" class="hidden" onclick="toggleSidebar()" style="position: fixed; bottom: 30px; left: 30px; width: 56px; height: 56px; border-radius: 50%; background: var(--text); color: white; border: none; font-size: 1.5rem; cursor: pointer; z-index: 1000; box-shadow: var(--shadow-lg); text-align: center; line-height: 56px; padding: 0; transition: transform 0.2s;" title="관리자 메뉴 열기">⚙️</button>
 
     <!-- 사이드바 (관리자 메뉴) -->
     <div class="sidebar hidden" id="sidebar">
@@ -458,9 +268,6 @@
             <h3 style="font-size: 1.1rem; margin-top: 2rem; display: flex; align-items: center; gap: 0.4rem;">📚 기초 데이터 업로드</h3>
             <p style="font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-bottom: 1rem;">※ 업로드 시 기존 데이터는 덮어쓰기 됩니다.</p>
             
-            <!-- 🔴 업로드 시간 표시 부분을 빨간색(var(--danger))으로 모두 변경했습니다. -->
-            
-            <!-- 상품색인부 카드 -->
             <div class="upload-card">
                 <div class="upload-card-header">
                     <span class="upload-title">📦 상품색인부</span>
@@ -470,7 +277,6 @@
                 <button class="secondary btn-upload" onclick="uploadExcel('products', 'file-products')" id="btn-upload-prod">상품 데이터 덮어쓰기</button>
             </div>
 
-            <!-- 매입처색인부 카드 -->
             <div class="upload-card">
                 <div class="upload-card-header">
                     <span class="upload-title">🏢 매입처색인부</span>
@@ -480,7 +286,6 @@
                 <button class="secondary btn-upload" onclick="uploadExcel('suppliers', 'file-suppliers')" id="btn-upload-sup">매입처 데이터 덮어쓰기</button>
             </div>
 
-            <!-- 제약사별담당자 카드 -->
             <div class="upload-card">
                 <div class="upload-card-header">
                     <span class="upload-title">👨‍💼 제약사별담당자</span>
@@ -490,7 +295,6 @@
                 <button class="secondary btn-upload" onclick="uploadExcel('managers', 'file-managers')" id="btn-upload-man">담당자 데이터 덮어쓰기</button>
             </div>
 
-            <!-- 매출처색인부 카드 -->
             <div class="upload-card">
                 <div class="upload-card-header">
                     <span class="upload-title">🏪 매출처색인부</span>
@@ -500,7 +304,6 @@
                 <button class="secondary btn-upload" onclick="uploadExcel('vendors', 'file-vendors')" id="btn-upload-vend">매출처 데이터 덮어쓰기</button>
             </div>
 
-            <!-- 품절 관리 품목 카드 -->
             <div class="upload-card">
                 <div class="upload-card-header">
                     <span class="upload-title">🚨 품절 관리 품목</span>
@@ -516,7 +319,6 @@
             <button class="secondary" style="margin-bottom: 0.5rem;" onclick="togglePinList()">📋 등록된 사용자(PIN) 목록</button>
             
             <div id="pin-list-display" class="hidden" style="background: white; padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.9rem; margin-bottom: 1rem; max-height: 250px; overflow-y: auto;">
-                <!-- 리스트가 여기에 나옵니다 -->
             </div>
             
             <h3 style="font-size: 1rem; margin-top: 2rem;">🚨 시스템 초기화</h3>
@@ -526,188 +328,195 @@
         </div>
     </div>
 
+    <!-- 🌟 새롭게 적용된 로그인 화면 (Split Screen) -->
+    <div id="login-wrapper">
+        <div class="login-image-side">
+            <img src="logo.png" alt="TJ Pharm Logo" onerror="this.style.display='none';">
+            <h1>티제이팜 발주 TF</h1>
+            <p>신속하고 정확한 의약품 발주 요청 시스템</p>
+        </div>
+        <div class="login-form-side">
+            <div class="login-form-container">
+                <h3 style="font-size:1.5rem; margin-bottom:0.5rem;">🔐 접속하기</h3>
+                <p style="margin-bottom: 2rem;">개인 접속 PIN <strong>4자리(숫자)</strong>를 입력하세요.</p>
+                
+                <input type="password" id="user-pin" placeholder="예: 1234" maxlength="4" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem; margin-bottom: 1.5rem; padding: 1rem;">
+                <button onclick="login()" style="padding: 1rem; font-size: 1.1rem;">시스템 입장</button>
+                
+                <div id="register-section" class="hidden" style="margin-top: 2.5rem; text-align: left;">
+                    <div class="info-box" style="border-radius: var(--radius-md); border-left: none; background: #F8FAFC; border: 1px solid var(--border); padding: 1rem;">
+                        <p style="color: var(--text);">👋 처음 입력하신 PIN 번호입니다.<br>연결할 <strong>본인의 이름</strong>을 등록해주세요.<br><span style="font-size:0.85rem; color:var(--danger); margin-top:0.5rem; display:inline-block;">※ 관리자 승인 후 접속 가능</span></p>
+                    </div>
+                    <input type="text" id="user-name" placeholder="등록자/답변자 이름 입력 (예: 김정욱)">
+                    <button onclick="registerPin()">승인 요청하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 메인 화면 -->
-    <div class="main">
+    <div class="main hidden" id="app-section">
         <h1>
             <span>📋 티제이팜 주문요청 게시판 <span style="font-size: 1rem; font-weight: normal; color: var(--primary);">[Cloudflare D1 연결 🟢]</span></span>
             <button onclick="loadAllData()" class="secondary" style="width:auto; padding:0.6rem 1.2rem; font-size:0.9rem;">🔄 새로고침</button>
         </h1>
         
-        <!-- Login Section -->
-        <div id="login-section" style="max-width: 500px; margin: 4rem auto; text-align: center; background: var(--bg); padding: 3rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); border: 1px solid var(--border);">
-            <h3>🔐 시스템 접속</h3>
-            <p>열람 및 등록을 위해 <strong>개인 접속 PIN 4자리(숫자)</strong>를 입력하세요.</p>
-            <input type="password" id="user-pin" placeholder="예: 1234" maxlength="4" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem; margin: 1.5rem 0;">
-            <button onclick="login()">접속하기</button>
+        <div class="info-box" style="background:#F0FDF4; border-color:var(--success); border-left-width: 4px; display:flex; justify-content:space-between; align-items:center;">
+            <p style="color:#047857; font-size:1.05rem;" id="welcome-msg"></p>
+            <button onclick="logout()" class="secondary" style="width:auto; padding:0.4rem 1rem; font-size:0.9rem;">로그아웃</button>
+        </div>
             
-            <div id="register-section" class="hidden" style="margin-top: 2rem; text-align: left;">
-                <div class="info-box" style="border-radius: var(--radius-md); border-left: none; background: #F8FAFC; border: 1px solid var(--border);">
-                    <p style="color: var(--text);">👋 처음 입력하신 PIN 번호입니다.<br>이 PIN 번호와 연결할 <strong>본인의 이름</strong>을 등록해주세요.<br><span style="font-size:0.85rem; color:var(--danger); margin-top:0.5rem; display:inline-block;">※ 등록 후 <b>관리자의 승인</b>이 있어야 접속이 가능합니다.</span></p>
-                </div>
-                <input type="text" id="user-name" placeholder="등록자/답변자 이름 입력 (예: 김정욱)">
-                <button onclick="registerPin()">이름 등록하고 승인 요청하기</button>
+        <!-- Metrics -->
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-title">📌 전체 등록</div>
+                <div class="metric-value" id="m-total">0건</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">⏳ 미체크(요청)</div>
+                <div class="metric-value" id="m-unchecked" style="color: var(--warning);">0건</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">✅ 답변완료</div>
+                <div class="metric-value" id="m-checked" style="color: var(--success);">0건</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">📦 입고완료</div>
+                <div class="metric-value" id="m-recv" style="color: var(--primary);">0건</div>
             </div>
         </div>
 
-        <!-- App Section -->
-        <div id="app-section" class="hidden">
-            <div class="info-box" style="background:#F0FDF4; border-color:var(--success); border-left-width: 4px; display:flex; justify-content:space-between; align-items:center;">
-                <p style="color:#047857; font-size:1.05rem;" id="welcome-msg"></p>
-                <button onclick="logout()" class="secondary" style="width:auto; padding:0.4rem 1rem; font-size:0.9rem;">로그아웃</button>
+        <!-- Input Form -->
+        <h3 style="margin-top: 3rem;">✍️ 신규 발주 추가</h3>
+        <p>상품, 거래처 정보와 사유(필수)를 입력하세요. (사유는 최대 30자)</p>
+        
+        <div class="form-row">
+            <div class="autocomplete-container">
+                <input type="text" id="i-prod" placeholder="📦 상품 검색 (예: 004090 레모나)" autocomplete="off">
+                <ul id="i-prod-list" class="autocomplete-list"></ul>
             </div>
-            
-            <!-- Metrics -->
-            <div class="metrics">
-                <div class="metric-card">
-                    <div class="metric-title">📌 전체 등록</div>
-                    <div class="metric-value" id="m-total">0건</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-title">⏳ 미체크(요청)</div>
-                    <div class="metric-value" id="m-unchecked" style="color: var(--warning);">0건</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-title">✅ 답변완료</div>
-                    <div class="metric-value" id="m-checked" style="color: var(--success);">0건</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-title">📦 입고완료</div>
-                    <div class="metric-value" id="m-recv" style="color: var(--primary);">0건</div>
-                </div>
+            <div class="autocomplete-container">
+                <input type="text" id="i-vend" placeholder="🏪 거래처 검색 (예: 77144 한마음)" autocomplete="off">
+                <ul id="i-vend-list" class="autocomplete-list"></ul>
             </div>
+            <div>
+                <input type="number" id="i-qty" placeholder="💊 수량" min="1">
+            </div>
+            <div>
+                <select id="i-center">
+                    <option value="" disabled selected>🏠 센터 선택</option>
+                    <option value="1 평택">1 평택센터</option>
+                    <option value="2 대전">2 대전센터</option>
+                    <option value="3 분당">3 분당센터</option>
+                    <option value="4 부천">4 부천센터</option>
+                </select>
+            </div>
+            <div>
+                <input type="text" id="i-reg" placeholder="🙋 등록자" readonly style="background: var(--sec-bg); color: var(--text-light);">
+            </div>
+            <div>
+                <input type="text" id="i-reason" placeholder="📝 등록 사유 (필수)" maxlength="30">
+            </div>
+        </div>
+        <button onclick="addRow()" id="btn-add">➕ 신규 발주 라인 추가</button>
+        
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 3rem 0;">
+        
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="radio-group">
+                <input type="radio" id="f-uncheck" name="filter" value="uncheck" onchange="resetPageAndRender()" checked>
+                <label for="f-uncheck">1️⃣ 미체크</label>
+                
+                <input type="radio" id="f-check" name="filter" value="check" onchange="resetPageAndRender()">
+                <label for="f-check">2️⃣ 답변완료</label>
+                
+                <input type="radio" id="f-recv" name="filter" value="recv" onchange="resetPageAndRender()">
+                <label for="f-recv">📦 입고완료</label>
+                
+                <input type="radio" id="f-all" name="filter" value="all" onchange="resetPageAndRender()">
+                <label for="f-all">전체보기</label>
+                
+                <input type="radio" id="f-del" name="filter" value="del" onchange="resetPageAndRender()">
+                <label for="f-del">🗑️ 삭제내역</label>
+            </div>
+            <div style="display:flex; gap:1rem; align-items:center;">
+                <button class="secondary" style="width: auto; padding: 0.6rem 1rem;" onclick="exportExcel()">📥 엑셀 다운로드</button>
+                <select id="f-center" onchange="resetPageAndRender()" style="width: auto; margin: 0; padding: 0.6rem 1rem;">
+                    <option value="all">센터(전체)</option>
+                    <option value="평택">1 평택센터</option>
+                    <option value="대전">2 대전센터</option>
+                    <option value="분당">3 분당센터</option>
+                    <option value="부천">4 부천센터</option>
+                </select>
+                <select id="f-limit" onchange="resetPageAndRender()" style="width: auto; margin: 0; padding: 0.6rem 1rem;">
+                    <option value="10">10개씩</option>
+                    <option value="25">25개씩</option>
+                    <option value="50" selected>50개씩</option>
+                    <option value="100">100개씩</option>
+                </select>
+            </div>
+        </div>
 
-            <!-- Input Form -->
-            <h3 style="margin-top: 3rem;">✍️ 신규 발주 추가</h3>
-            <p>상품, 거래처 정보와 사유(필수)를 입력하세요. (사유는 최대 30자)</p>
-            
-            <div class="form-row">
-                <div class="autocomplete-container">
-                    <input type="text" id="i-prod" placeholder="📦 상품 검색 (예: 004090 레모나)" autocomplete="off">
-                    <ul id="i-prod-list" class="autocomplete-list"></ul>
-                </div>
-                <div class="autocomplete-container">
-                    <input type="text" id="i-vend" placeholder="🏪 거래처 검색 (예: 77144 한마음)" autocomplete="off">
-                    <ul id="i-vend-list" class="autocomplete-list"></ul>
-                </div>
-                <div>
-                    <input type="number" id="i-qty" placeholder="💊 수량" min="1">
-                </div>
-                <div>
-                    <select id="i-center">
-                        <option value="" disabled selected>🏠 센터 선택</option>
-                        <option value="1 평택">1 평택센터</option>
-                        <option value="2 대전">2 대전센터</option>
-                        <option value="3 분당">3 분당센터</option>
-                        <option value="4 부천">4 부천센터</option>
-                    </select>
-                </div>
-                <div>
-                    <input type="text" id="i-reg" placeholder="🙋 등록자" readonly style="background: var(--sec-bg); color: var(--text-light);">
-                </div>
-                <div>
-                    <input type="text" id="i-reason" placeholder="📝 등록 사유 (필수)" maxlength="30">
+        <!-- Detailed Search Expander -->
+        <div class="expander open" id="search-expander">
+            <div class="expander-header" onclick="toggleExpander()">
+                <span>🔍 표 상세 검색 필터</span>
+                <span id="expander-icon">▼</span>
+            </div>
+            <div class="expander-content">
+                <div class="search-grid">
+                    <input type="text" id="s-pcode" placeholder="제품코드" oninput="resetPageAndRender()">
+                    <input type="text" id="s-pname" placeholder="제품명" oninput="resetPageAndRender()">
+                    <input type="text" id="s-vcode" placeholder="거래처코드" oninput="resetPageAndRender()">
+                    <input type="text" id="s-vname" placeholder="거래처명" oninput="resetPageAndRender()">
+                    <input type="text" id="s-reg" placeholder="등록자" oninput="resetPageAndRender()">
+                    <input type="text" id="s-comp" placeholder="답변자" oninput="resetPageAndRender()">
                 </div>
             </div>
-            <button onclick="addRow()" id="btn-add">➕ 신규 발주 라인 추가</button>
-            
-            <hr style="border: 0; border-top: 1px solid var(--border); margin: 3rem 0;">
-            
-            <!-- Filter Bar -->
-           <div class="filter-bar">
-                <div class="radio-group">
-                    <input type="radio" id="f-uncheck" name="filter" value="uncheck" onchange="resetPageAndRender()" checked>
-                    <label for="f-uncheck">1️⃣ 미체크</label>
-                    
-                    <input type="radio" id="f-check" name="filter" value="check" onchange="resetPageAndRender()">
-                    <label for="f-check">2️⃣ 답변완료</label>
-                    
-                    <input type="radio" id="f-recv" name="filter" value="recv" onchange="resetPageAndRender()">
-                    <label for="f-recv">📦 입고완료</label>
-                    
-                    <input type="radio" id="f-all" name="filter" value="all" onchange="resetPageAndRender()">
-                    <label for="f-all">전체보기</label>
-                    
-                    <input type="radio" id="f-del" name="filter" value="del" onchange="resetPageAndRender()">
-                    <label for="f-del">🗑️ 삭제내역</label>
-                </div>
-                <div style="display:flex; gap:1rem; align-items:center;">
-                    <button class="secondary" style="width: auto; padding: 0.6rem 1rem;" onclick="exportExcel()">📥 엑셀 다운로드</button>
-                    <select id="f-center" onchange="resetPageAndRender()" style="width: auto; margin: 0; padding: 0.6rem 1rem;">
-                        <option value="all">센터(전체)</option>
-                        <option value="평택">1 평택센터</option>
-                        <option value="대전">2 대전센터</option>
-                        <option value="분당">3 분당센터</option>
-                        <option value="부천">4 부천센터</option>
-                    </select>
-                    <select id="f-limit" onchange="resetPageAndRender()" style="width: auto; margin: 0; padding: 0.6rem 1rem;">
-                        <option value="10">10개씩</option>
-                        <option value="25">25개씩</option>
-                        <option value="50" selected>50개씩</option>
-                        <option value="100">100개씩</option>
-                    </select>
-                </div>
-            </div>
+        </div>
 
-            <!-- Detailed Search Expander -->
-            <div class="expander open" id="search-expander">
-                <div class="expander-header" onclick="toggleExpander()">
-                    <span>🔍 표 상세 검색 필터</span>
-                    <span id="expander-icon">▼</span>
-                </div>
-                <div class="expander-content">
-                    <div class="search-grid">
-                        <input type="text" id="s-pcode" placeholder="제품코드" oninput="resetPageAndRender()">
-                        <input type="text" id="s-pname" placeholder="제품명" oninput="resetPageAndRender()">
-                        <input type="text" id="s-vcode" placeholder="거래처코드" oninput="resetPageAndRender()">
-                        <input type="text" id="s-vname" placeholder="거래처명" oninput="resetPageAndRender()">
-                        <input type="text" id="s-reg" placeholder="등록자" oninput="resetPageAndRender()">
-                        <input type="text" id="s-comp" placeholder="답변자" oninput="resetPageAndRender()">
-                    </div>
-                </div>
+        <!-- Data Table -->
+        <div class="table-container">
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th style="white-space: nowrap; min-width: 65px;">🗑️ 삭제</th>
+                        <th style="white-space: nowrap; min-width: 50px;">상태</th>
+                        <th style="white-space: nowrap; min-width: 50px;">입고</th>
+                        <th style="white-space: nowrap;">매입처</th>
+                        <th style="white-space: nowrap;">제품코드</th>
+                        <th style="min-width: 180px;">제품명</th>
+                        <th style="white-space: nowrap;">규격</th>
+                        <th style="white-space: nowrap; min-width: 50px;">수량</th>
+                        <th style="white-space: nowrap;">거래처코드</th>
+                        <th style="min-width: 120px;">거래처명</th>
+                        <th style="white-space: nowrap;">센터</th>
+                        <th style="white-space: nowrap;">등록자</th>
+                        <th style="min-width: 100px;">등록 사유</th>
+                        <th style="white-space: nowrap;">등록일시</th>
+                        <th style="white-space: nowrap;">담당자<br>답변자</th>
+                        <th style="min-width: 160px;">비고(사유)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data injected via JS -->
+                </tbody>
+            </table>
+            <div id="empty-state" style="padding: 4rem; text-align: center; color: var(--text-light); display: none;">
+                데이터를 불러오는 중이거나 등록된 내역이 없습니다.
             </div>
-
-            <!-- Data Table -->
-            <div class="table-container">
-                <table id="data-table">
-                    <thead>
-                        <tr>
-                            <th style="white-space: nowrap; min-width: 65px;">🗑️ 삭제</th>
-                            <th style="white-space: nowrap; min-width: 50px;">상태</th>
-                            <th style="white-space: nowrap; min-width: 50px;">입고</th>
-                            <th style="white-space: nowrap;">매입처</th>
-                            <th style="white-space: nowrap;">제품코드</th>
-                            <th style="min-width: 180px;">제품명</th>
-                            <th style="white-space: nowrap;">규격</th>
-                            <th style="white-space: nowrap; min-width: 50px;">수량</th>
-                            <th style="white-space: nowrap;">거래처코드</th>
-                            <th style="min-width: 120px;">거래처명</th>
-                            <th style="white-space: nowrap;">센터</th>
-                            <th style="white-space: nowrap;">등록자</th>
-                            <th style="min-width: 100px;">등록 사유</th>
-                            <th style="white-space: nowrap;">등록일시</th>
-                            <th style="white-space: nowrap;">담당자<br>답변자</th>
-                            <th style="min-width: 160px;">비고(사유)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Data injected via JS -->
-                    </tbody>
-                </table>
-                <div id="empty-state" style="padding: 4rem; text-align: center; color: var(--text-light); display: none;">
-                    데이터를 불러오는 중이거나 등록된 내역이 없습니다.
-                </div>
+        </div>
+        <p style="font-size: 0.85rem; margin-top: 1rem;">💡 데이터를 새로 확인하려면 상단의 <b>[🔄 새로고침]</b> 버튼을 누르세요. <b>지정된 담당자</b>만 확인(답변 및 입고) 처리가 가능합니다.</p>
+        
+        <!-- Pagination -->
+        <div class="pagination">
+            <button class="secondary" id="btn-prev" onclick="changePage(-1)">◀ 이전</button>
+            <div style="text-align: center;">
+                <b id="page-info" style="color: var(--text); font-size: 1rem;">1 / 1 페이지</b><br>
+                <span style="font-size: 13px; color: var(--text-light);" id="total-info">검색된 데이터 총 0건</span>
             </div>
-            <p style="font-size: 0.85rem; margin-top: 1rem;">💡 데이터를 새로 확인하려면 상단의 <b>[🔄 새로고침]</b> 버튼을 누르세요. <b>지정된 담당자</b>만 확인(답변 및 입고) 처리가 가능합니다.</p>
-            
-            <!-- Pagination -->
-            <div class="pagination">
-                <button class="secondary" id="btn-prev" onclick="changePage(-1)">◀ 이전</button>
-                <div style="text-align: center;">
-                    <b id="page-info" style="color: var(--text); font-size: 1rem;">1 / 1 페이지</b><br>
-                    <span style="font-size: 13px; color: var(--text-light);" id="total-info">검색된 데이터 총 0건</span>
-                </div>
-                <button class="secondary" id="btn-next" onclick="changePage(1)">다음 ▶</button>
-            </div>
+            <button class="secondary" id="btn-next" onclick="changePage(1)">다음 ▶</button>
         </div>
     </div>
     
@@ -734,18 +543,12 @@
 
         const isTrue = (val) => val === 1 || val === true || val === 'true';
 
+        // 🌟 수정된 로드 이벤트 (스플래시 제거 및 즉시 데이터 로드)
         window.addEventListener('load', () => {
-            setTimeout(() => {
-                const splash = document.getElementById('splash-screen');
-                if (splash) {
-                    splash.style.opacity = '0';
-                    setTimeout(() => {
-                        splash.style.display = 'none';
-                    }, 800);
-                }
-            }, 1500);
-            
-            loadAllData(); 
+            loadAllData(true); 
+            // 시작 시 PIN 입력칸에 자동으로 포커스
+            const pinInput = document.getElementById('user-pin');
+            if (pinInput) pinInput.focus();
         });
 
         async function loadAllData(isSilent = false) {
@@ -827,9 +630,11 @@
             return name.replace(/\(주\)/g, '').replace(/\(유\)/g, '').replace(/주식회사/g, '').trim();
         }
 
-        const elLoginSec = document.getElementById('login-section');
+        // 🌟 수정된 로그인 관련 로직 (Split UI 대응)
+        const elLoginWrapper = document.getElementById('login-wrapper');
         const elAppSec = document.getElementById('app-section');
         const elRegSec = document.getElementById('register-section');
+        const btnSidebar = document.getElementById('btn-show-sidebar');
         
         function login() {
             const pin = document.getElementById('user-pin').value;
@@ -858,9 +663,16 @@
             currentUser = "";
             currentPin = "";
             document.getElementById('user-pin').value = "";
+            
             elAppSec.classList.add('hidden');
-            elLoginSec.classList.remove('hidden');
+            btnSidebar.classList.add('hidden');
+            
+            elLoginWrapper.classList.remove('hidden');
             elRegSec.classList.add('hidden');
+            
+            setTimeout(() => {
+                elLoginWrapper.style.opacity = '1';
+            }, 10);
             
             if (autoRefreshTimer) {
                 clearInterval(autoRefreshTimer);
@@ -894,8 +706,15 @@
         }
 
         function showApp() {
-            elLoginSec.classList.add('hidden');
-            elAppSec.classList.remove('hidden');
+            // 부드러운 전환 효과 (Opacity)
+            elLoginWrapper.style.opacity = '0';
+            
+            setTimeout(() => {
+                elLoginWrapper.classList.add('hidden');
+                elAppSec.classList.remove('hidden');
+                btnSidebar.classList.remove('hidden'); 
+            }, 400);
+
             document.getElementById('welcome-msg').innerHTML = `✅ 인증 완료! 환영합니다, <strong>${currentUser}</strong>님`;
             document.getElementById('i-reg').value = currentUser;
             renderTable();
@@ -1662,7 +1481,6 @@
                         });
                         rows = Array.from(uniqueMap.values());
                     } else if (tableName === 'outofstock') {
-                        // 규격별로 각각 독립된 품절 상태를 유지할 수 있도록 코드+규격 조합을 키로 중복 제거
                         const uniqueMap = new Map();
                         rows.forEach(r => {
                             if(r.code !== '000000') {
@@ -1859,7 +1677,6 @@
                         }
                     }
 
-                    // 🌟 규격별(고유 코드 기준) 개별 품절/중단 여부 판별
                     const oosItem = outOfStockData.find(o => o.code === item.code);
                     let oosBadge = "";
                     let oosInfo = "";
