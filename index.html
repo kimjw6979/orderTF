@@ -1452,7 +1452,8 @@
                                     code: String(code).replace(/\.0$/, '').trim().padStart(6, '0'), 
                                     name: String(r['상품명'] || r['제품명'] || r['품명'] || '').trim(), 
                                     spec: String(r['규격'] || '').trim(), 
-                                    seller: getLastMatchingColumn(r, '판매원') || getLastMatchingColumn(r, '제약사') || getLastMatchingColumn(r, '제조원')
+                                    seller: getLastMatchingColumn(r, '판매원') || getLastMatchingColumn(r, '제약사') || getLastMatchingColumn(r, '제조원'),
+                                    standardCode: String(r['표준코드'] || '').trim() // 👈 추가된 부분
                                 });
                             }
                         }
@@ -1681,7 +1682,8 @@
             setupAutocomplete(
                 'i-prod', 
                 'i-prod-list', 
-                () => productsData, 
+                // 👈 수정된 부분: 표준코드가 존재하는 상품만 반환
+                () => productsData.filter(p => p.standardCode && p.standardCode.trim() !== ""), 
                 ['name', 'code', 'spec'],
                 (item) => {
                     let sName = "-";
