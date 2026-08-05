@@ -83,7 +83,7 @@ export async function onRequest(context) {
                     )
                 `).run();
             } else if (table === "products") {
-                // 기존 products 테이블에 standardCode 컬럼이 없다면 자동 추가 (있으면 무시됨)
+                // 기존 products 테이블에 standardCode 컬럼이 없다면 자동 추가
                 try {
                     await db.prepare("ALTER TABLE products ADD COLUMN standardCode TEXT").run();
                 } catch (e) {
@@ -96,7 +96,6 @@ export async function onRequest(context) {
             if (rows.length > 0) {
                 let statements = [];
                 if (table === "products") {
-                    // standardCode 데이터를 함께 INSERT 하도록 쿼리문 수정
                     statements = rows.map(r =>
                         db.prepare("INSERT INTO products (code, name, spec, seller, standardCode) VALUES (?, ?, ?, ?, ?)")
                           .bind(r.code, r.name, r.spec, r.seller, r.standardCode)
