@@ -1453,7 +1453,7 @@
                                     name: String(r['상품명'] || r['제품명'] || r['품명'] || '').trim(), 
                                     spec: String(r['규격'] || '').trim(), 
                                     seller: getLastMatchingColumn(r, '판매원') || getLastMatchingColumn(r, '제약사') || getLastMatchingColumn(r, '제조원'),
-                                    standardCode: String(r['표준코드'] || '').trim() // 👈 추가된 부분
+                                    standardCode: String(r['표준코드'] || '').trim() 
                                 });
                             }
                         }
@@ -1682,8 +1682,8 @@
             setupAutocomplete(
                 'i-prod', 
                 'i-prod-list', 
-                // 👈 수정된 부분: 표준코드가 존재하는 상품만 반환
-                () => productsData.filter(p => p.standardCode && p.standardCode.trim() !== ""), 
+                // 👈 에러 방지: p.standardCode를 문자열로 안전하게 변환 후 처리
+                () => productsData.filter(p => p.standardCode && String(p.standardCode).trim() !== ""), 
                 ['name', 'code', 'spec'],
                 (item) => {
                     let sName = "-";
