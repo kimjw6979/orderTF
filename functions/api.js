@@ -70,6 +70,7 @@ export async function onRequest(context) {
                 );
             }
 
+            // 테이블 스키마 자동 업데이트 로직
             if (table === "outofstock") {
                 await db.prepare(`
                     CREATE TABLE IF NOT EXISTS outofstock (
@@ -81,6 +82,13 @@ export async function onRequest(context) {
                         remark TEXT
                     )
                 `).run();
+            } else if (table === "products") {
+                // 기존 products 테이블에 standardCode 컬럼이 없다면 자동 추가 (있으면 무시됨)
+                try {
+                    await db.prepare("ALTER TABLE products ADD COLUMN standardCode TEXT").run();
+                } catch (e) {
+                    // 이미 컬럼이 존재하는 경우 발생하는 에러 무시
+                }
             }
 
             await db.prepare(`DELETE FROM ${table}`).run();
@@ -88,9 +96,10 @@ export async function onRequest(context) {
             if (rows.length > 0) {
                 let statements = [];
                 if (table === "products") {
+                    // standardCode 데이터를 함께 INSERT 하도록 쿼리문 수정
                     statements = rows.map(r =>
-                        db.prepare("INSERT INTO products (code, name, spec, seller) VALUES (?, ?, ?, ?)")
-                          .bind(r.code, r.name, r.spec, r.seller)
+                        db.prepare("INSERT INTO products (code, name, spec, seller, standardCode) VALUES (?, ?, ?, ?, ?)")
+                          .bind(r.code, r.name, r.spec, r.seller, r.standardCode)
                     );
                 } else if (table === "vendors") {
                     statements = rows.map(r =>
