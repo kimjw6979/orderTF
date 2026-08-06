@@ -186,8 +186,28 @@
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         th, td { border-bottom: 1px solid var(--border); padding: 1.2rem 0.8rem; text-align: center; vertical-align: middle; transition: background-color 0.2s; }
         th { color: var(--text-light); font-weight: 700; background: #F8FAFC; position: sticky; top: 0; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.05em; border-bottom: 2px solid var(--border); }
-        tr:hover td { background-color: var(--sec-bg); }
         tr:last-child td { border-bottom: none; }
+        
+        /* 🌟 센터별 색상 배지 태그 */
+        .badge-center {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: -0.02em;
+        }
+        .badge-pt { background-color: #DBEAFE; color: #1E3A8A; } /* 평택: 연파랑 바탕 + 짙은 파랑 글씨 */
+        .badge-dj { background-color: #D1FAE5; color: #064E3B; } /* 대전: 연초록 바탕 + 짙은 초록 글씨 */
+        .badge-bd { background-color: #FEF3C7; color: #78350F; } /* 분당: 연노랑 바탕 + 머스터드(갈색) 글씨 */
+        .badge-bc { background-color: #FFEDD5; color: #7C2D12; } /* 부천: 연주황 바탕 + 짙은 주황 글씨 */
+        .badge-default { background-color: #F1F5F9; color: #475569; } /* 기본/미지정 */
+
+        /* 🌟 마우스 오버 시 연한 파란색 띠 효과 */
+        tbody tr:hover td { 
+            background-color: #EFF6FF !important; 
+            transition: background-color 0.15s ease;
+        }
         
         /* Checkbox Customization */
         input[type="checkbox"] { appearance: none; width: 20px; height: 20px; border: 2px solid #CBD5E1; border-radius: 4px; cursor: pointer; position: relative; background-color: var(--bg); transition: all 0.2s; }
@@ -1046,6 +1066,17 @@
                         }
                     }
 
+                    // 🌟 센터별 색상 배지 설정 로직
+                    let centerBadgeClass = "badge-default";
+                    let centerText = e.center || '-';
+
+                    if (centerText.includes("평택")) centerBadgeClass = "badge-pt";
+                    else if (centerText.includes("대전")) centerBadgeClass = "badge-dj";
+                    else if (centerText.includes("분당")) centerBadgeClass = "badge-bd";
+                    else if (centerText.includes("부천")) centerBadgeClass = "badge-bc";
+
+                    let centerHtml = centerText !== '-' ? `<span class="badge-center ${centerBadgeClass}">${centerText}</span>` : '-';
+
                     const tr = document.createElement('tr');
                     if (recvStatus) {
                         tr.style.backgroundColor = 'var(--received)';
@@ -1089,8 +1120,8 @@
                         <td style="font-weight:600;">
                             ${e.vName || '-'}
                         </td>
-                        <td style="font-weight:500;">
-                            ${e.center || '-'}
+                        <td style="text-align:center;">
+                            ${centerHtml}
                         </td>
                         <td style="font-weight:600;">
                             ${e.reg || '-'}
