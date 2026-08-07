@@ -592,6 +592,8 @@
         async function loadAllData(isSilent = false) {
             try {
                 const res = await fetch('/api?action=getAll');
+                if (!res.ok) throw new Error("서버 에러가 발생했습니다.");
+
                 const data = await res.json();
                 
                 productsData = data.products || [];
@@ -616,17 +618,18 @@
                 }
             } catch (e) {
                 console.error(e);
-                if (!isSilent) showToast("데이터 로딩 중 오류가 발생했습니다. (API 확인 필요)", true);
+                if (!isSilent) showToast("🚨 데이터 로딩 중 오류가 발생했습니다. (API 확인 필요)", true);
             }
         }
 
         async function saveEntryToDB(entryData) {
             try {
-                await fetch('/api?action=addEntry', {
+                const res = await fetch('/api?action=addEntry', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(entryData)
                 });
+                if (!res.ok) throw new Error();
                 await loadAllData(); 
             } catch (e) {
                 showToast("등록 실패: API 통신 오류", true);
@@ -649,6 +652,8 @@
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ id: id, updates: updates })
+            }).then(res => {
+                if (!res.ok) throw new Error();
             }).catch(e => {
                 showToast("업데이트 실패: API 통신 오류", true);
             });
@@ -726,11 +731,12 @@
             }
             
             try {
-                await fetch('/api?action=addPin', {
+                const res = await fetch('/api?action=addPin', {
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pin: currentPin, name: name, approved: false })
                 });
+                if (!res.ok) throw new Error();
                 
                 showToast("⏳ 등록 완료! 관리자의 승인 후 접속할 수 있습니다.");
                 document.getElementById('user-pin').value = "";
@@ -1068,7 +1074,7 @@
 
                     // 🌟 센터별 색상 배지 설정 로직
                     let centerBadgeClass = "badge-default";
-                    let centerText = e.center || '-';
+                    let centerText = String(e.center || '-'); // 👈 숫자 변환 시 에러 방지를 위해 String 래핑
 
                     if (centerText.includes("평택")) centerBadgeClass = "badge-pt";
                     else if (centerText.includes("대전")) centerBadgeClass = "badge-dj";
@@ -1265,11 +1271,12 @@
 
         window.approvePin = async function(pin, name) {
             try {
-                await fetch('/api?action=addPin', {
+                const res = await fetch('/api?action=addPin', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ pin: pin, name: name, approved: true })
                 });
+                if (!res.ok) throw new Error();
                 showToast(`✅ ${name}님의 접속이 정상적으로 승인되었습니다.`);
                 loadAllData();
             } catch(e) {
@@ -1280,11 +1287,12 @@
         window.deletePin = async function(pin, name) {
             if(confirm(`[${name}] 직원의 PIN(${pin}) 등록 내역을 정말 삭제하시겠습니까?`)) {
                 try {
-                    await fetch('/api?action=deletePin', {
+                    const res = await fetch('/api?action=deletePin', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ pin: pin })
                     });
+                    if (!res.ok) throw new Error();
                     showToast(`✅ ${name}님의 PIN 내역이 삭제되었습니다.`);
                     loadAllData();
                 } catch(e) {
@@ -1300,11 +1308,12 @@
 
             if(confirm(`🚨 경고: 모든 ${msg}이 초기화됩니다. 계속하시겠습니까?`)) {
                 try {
-                    await fetch('/api?action=' + action, {
+                    const res = await fetch('/api?action=' + action, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({})
                     });
+                    if (!res.ok) throw new Error();
                     showToast(`✅ 모든 ${msg}이 성공적으로 초기화되었습니다.`);
                     if(action === 'clearAllPins') {
                         logout();
@@ -1559,11 +1568,14 @@
                                    String(now.getHours()).padStart(2,'0') + ":" + 
                                    String(now.getMinutes()).padStart(2,'0');
 
-                    await fetch('/api?action=uploadMaster', {
+                    // 👈 서버 에러 시 멈추도록 예외 처리 강화
+                    const uploadRes = await fetch('/api?action=uploadMaster', {
                         method: 'POST', 
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ table: tableName, rows: rows, uploadDate: dateStr })
                     });
+                    
+                    if (!uploadRes.ok) throw new Error("서버에서 오류를 반환했습니다. (백엔드 코드 점검 필요)");
 
                     showToast(`✅ ${tableName} 업로드 완료!`);
                     fileInput.value = ""; 
